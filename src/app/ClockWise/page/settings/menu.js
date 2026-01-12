@@ -47,7 +47,7 @@ Page({
         this.initBg()
         const menu = [
             {src:'', text: getText('Auto delete')},
-            {src:'', text: getText('Clear history')}
+            {src:'', text: getText('Clear history')},
         ]
         cycleList = createWidget(widget.CYCLE_IMAGE_TEXT_LIST, {
             x: (480-330)/2,
@@ -70,7 +70,6 @@ Page({
                 } else if (index == 1){
                     this.initClearHistoryDialog()
                 }
-
             },
             item_focus_change_func: (cycleList, index, isFocus) => {
 

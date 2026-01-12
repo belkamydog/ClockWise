@@ -10,6 +10,7 @@ import { HOUR_MS, WEEK_DAYS_SHORT } from '../utils/Constants';
 import { Event } from '../utils/models/Event';
 import { styleColors } from '../utils/Constants'
 import { EventService } from '../utils/services/EventService'
+import { SettingsService } from '../utils/services/SettingsService'
 
 import { BasePage } from '@zeppos/zml/base-page'
 
@@ -275,15 +276,52 @@ Page(
       }
     },
 
+    renderStudyMode(){
+        logger.log('Study mode page init')
+        const studyTitle = createWidget(widget.TEXT, {
+          text: getText('Welcome to ClockWise study mode') + '!',
+          text_size: 30,
+          w: 400,
+          x: (480-400)/2,
+          y: 100
+        }) 
+       const exitStudyBtn =  createWidget(widget.BUTTON, {
+          x: 40,
+          y: 350,
+          w: 400,
+          h: 60,
+          radius: 30,
+          normal_color: styleColors.dark_gray,
+          press_color: styleColors.blue_violet,
+          text: getText("Let's start"),
+          text_size: 24,
+          click_func: () => {
+            let settings = SettingsService.loadSettings()
+            settings.studyMode = false
+            SettingsService.saveSettings(settings)
+            push({ url: 'page/index' })
+          }
+        })
+    },
+
     onInit(params){
-      this.initBg()
-      this.registerGes()
-      this.initWfNumbers()
-      this.initArrows()
-      this.initCanvas()
-      this.renderEvents(eventServise.getActualEvents())
-      this.iniitCentralBackground()
-      this.initDigitalTime()
+      const settings = SettingsService.loadSettings()
+      if (settings.studyMode) {
+        push({
+          url: 'page/guides/welcome'
+        })
+      }
+      else{
+        this.renderStudyMode()
+        this.initBg()
+        this.registerGes()
+        this.initWfNumbers()
+        this.initArrows()
+        this.initCanvas()
+        this.renderEvents(eventServise.getActualEvents())
+        this.iniitCentralBackground()
+        this.initDigitalTime()
+      }
     },
   })
 )

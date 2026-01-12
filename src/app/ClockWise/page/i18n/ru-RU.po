@@ -202,3 +202,21 @@ msgstr "Разработчик"
 
 msgid "Contact"
 msgstr "Контакты"
+
+msgid "Welcome"
+msgstr "Приветствуем"
+
+msgid "to"
+msgstr "в"
+
+msgid "Quick intro ahead"
+msgstr "Начнём наше знакомство"
+
+msgid "Get started"
+msgstr "Приступим"
+
+msgid "Done"
+msgstr "Завершить"
+
+msgid "Next"
+msgstr "Далее"

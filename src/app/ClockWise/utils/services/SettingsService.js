@@ -16,7 +16,7 @@ export class SettingsService {
      */
     static #setDefaultSettings(){
         logger.log('Set Default Settings')
-        const defaultSet = {autoDelete: 'never', colorTheme: 'standard'}
+        const defaultSet = {autoDelete: 'never', colorTheme: 'standard', studyMode: true}
         this.saveSettings(defaultSet)
         return defaultSet
     }
@@ -33,12 +33,12 @@ export class SettingsService {
      * - Logs error
      * - Sets default settings
      * 
-     * @returns {{autoDelete: string, colorTheme: string}} Application settings object
+     * @returns {{autoDelete: string, colorTheme: string, studyMode: boolean}} Application settings object
      * @throws {Error} In case of critical loading error
      * 
      * @example
      * const settings = SettingsManager.loadSettings();
-     * // settings = { autoDelete: 'never', colorTheme: 'light' }
+     * // settings = { autoDelete: 'never', colorTheme: 'light', studyMode: true}
      */
     static loadSettings() {
         try {
@@ -46,9 +46,9 @@ export class SettingsService {
             const settings = JSON.parse(FileService.readFile(this.#settingsFilePath));
             this.#validateSettings(settings);
             logger.log('Load settings done');
-            return { autoDelete:settings.autoDelete, colorTheme: settings.colorTheme };
-        } catch (Error) {
-            logger.error(Error, 'Load settings failed');
+            return { autoDelete:settings.autoDelete, colorTheme: settings.colorTheme, studyMode: settings.studyMode };
+        } catch (error) {
+            logger.error(error, 'Load settings failed');
             return this.#setDefaultSettings();
         }
     }
@@ -59,6 +59,7 @@ export class SettingsService {
      * @param {Object} settings Settings object to save
      * @param {string} settings.autoDelete Auto-delete value
      * @param {string} settings.colorTheme Theme value
+     * @param {boolean} settings.studyMode Study mode value
      * @returns {void}
      * @throws {Error} Throws error on failed write
      */
@@ -68,8 +69,8 @@ export class SettingsService {
             logger.log('Saving settings...')
             FileService.writeFile(this.#settingsFilePath, settings)
             logger.log('Save settings done')
-        } catch (Error){
-            logger.error(Error, 'Save settings failed')
+        } catch (error){
+            logger.error(error, 'Save settings failed')
             throw new Error('Save settings failed')
         }
     }
@@ -86,8 +87,10 @@ export class SettingsService {
             settings == null || 
             typeof settings.autoDelete !== 'string' ||
             typeof settings.colorTheme !== 'string'||
+            typeof settings.studyMode !== 'boolean'||
             !settings.hasOwnProperty('autoDelete') ||
-            !settings.hasOwnProperty('colorTheme')
+            !settings.hasOwnProperty('colorTheme') ||
+            !settings.hasOwnProperty('studyMode')
         ) {
             throw new Error('Invalid settings');
         }
