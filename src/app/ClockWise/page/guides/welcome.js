@@ -44,7 +44,7 @@ Page({
             text: getText('Get started') + '🚀',
             text_size: 38,
             click_func: () => {
-                push({ url: 'page/guides/step_1' })
+                push({ url: 'page/guides/step_0' })
             }
         })
     }

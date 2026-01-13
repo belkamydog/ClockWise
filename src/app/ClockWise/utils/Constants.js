@@ -194,5 +194,21 @@ export const DATE_TIME_PEACKER = {
     unit_font_size: 5,
     col_width: 45,
 }
+
+export const MONTH = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+]
+
 export const REPEAT = ['never', 'day', 'week', 'month']
 export const AUTO_DELETE = ['never', 'day', 'week', 'month']
