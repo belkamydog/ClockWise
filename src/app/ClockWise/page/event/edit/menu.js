@@ -5,10 +5,19 @@ import { getText } from '@zos/i18n'
 import { push } from '@zos/router'
 import {log} from '@zos/utils'
 import { styleColors } from '../../../utils/Constants'
+import { PageTitle } from '../../../common/widgets/PageTitle'
+import { BackBtn } from '../../../common/widgets/backBtn'
+import { PageIndicator } from '../../../common/widgets/pageIndicator'
 
 const logger = log.getLogger('page/event/edit/menu.js')
 
 Page({
+    widgets: {
+        title: null,
+        backBtn: null,
+        pageIndicator: null,
+    },
+
     registerGes(){
         onGesture({
             callback: (event) => {
@@ -35,19 +44,7 @@ Page({
         color: styleColors.black,
         })
     },
-    initTitle(){
-        createWidget(widget.TEXT, {
-            text: getText('Edit'),
-            w: 480,
-            h: 30,
-            x: 0,
-            y: 40,
-            align_h: align.CENTER_H,
-            align_v: align.CENTER_V,
-            text_size: 30,
-            color: styleColors.yellow
-        })
-    },
+
     initNewEventDialog(){
         const dialog = createModal({
             content: getText('Edit event') + '?',
@@ -70,8 +67,6 @@ Page({
     onInit(params){
         logger.log('Init edit event menu page with params: ' + params)
         this.registerGes()
-        this.initBg()
-        this.initTitle()
         const menu = [
             {src:'', text: getText('Description')},
             {src:'', text: getText('Start date')},
@@ -79,11 +74,13 @@ Page({
             {src:'', text: getText('Color')},
             {src:'', text: getText('Repeat')},
         ]
+        this.widgets.title = PageTitle.renderTitle('Edit')
+        this.widgets.pageIndicator = new PageIndicator(menu.length)
         cycleList = createWidget(widget.CYCLE_IMAGE_TEXT_LIST, {
             x: (480-330)/2,
-            y: (480-300)/2,
+            y: (480-300)/2+20,
             w: 330,
-            h: 300,
+            h: 300-20,
             data_array: menu,
             data_size: menu.length,
             item_height: 120,
@@ -125,7 +122,10 @@ Page({
                     })  
                 }
             },
-            item_focus_change_func: (cycleList, index, isFocus) => {}
+            item_focus_change_func: (cycleList, index, isFocus) => {
+                this.widgets.pageIndicator.updatePageIndicator(index)
+            }
         })
+        this.widgets.backBtn = BackBtn.renderBackBtn('Main page', 'page/index')
     }
 })

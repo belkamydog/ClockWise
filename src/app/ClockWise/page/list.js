@@ -8,7 +8,8 @@ import {log} from '@zos/utils'
 import { Event } from '../utils/models/Event';
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { EventService } from '../utils/services/EventService';
-import { PageIndicator } from '../utils/layouts/pageIndicator'
+import { PageIndicator } from '../common/widgets/PageIndicator'
+import { PageTitle } from '../common/widgets/PageTitle'
 
 
 const logger = log.getLogger('page/list.js')
@@ -28,48 +29,8 @@ Page({
       })
   },
 
-  initBg(){
-    this.circle = createWidget(widget.CIRCLE, {
-      center_x: 240,
-      center_y: 240,
-      radius: 227,
-      color: styleColors.white_smoke,
-    })
-    this.circle = createWidget(widget.CIRCLE, {
-      center_x: 240,
-      center_y: 240,
-      radius: 225,
-      color: styleColors.black,
-    })
-  },
-
   initTitle(date){
-    const titleText = getText('List of events')
-    createWidget(widget.TEXT, {
-      text: titleText,
-      x: 0,
-      y: 50,
-      w: 480,
-      h: 50,
-      text_size: 35,
-      align_h: align.CENTER_H,
-      align_v: align.CENTER_V,
-      color: styleColors.white
-    })
-    let dateText = Event.addZero(date.getDate()) + '.' + 
-                   Event.addZero((date.getMonth()+1)) + '.' + 
-                   date.getFullYear()
-    createWidget(widget.TEXT, {
-        text: dateText,
-        x: 0,
-        y: 90,
-        w: 480,
-        h: 50,
-        text_size: 35,
-        align_h: align.CENTER_H,
-        align_v: align.CENTER_V,
-        color: styleColors.white
-    })
+    PageTitle.renderTitle('List of events')
   },
 
   addKeys(arrEv) {

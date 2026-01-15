@@ -187,6 +187,16 @@ export const WEEK_DAYS_SHORT = [
     "fri",   // Friday
     "sat",   // Saturday
 ];
+
+export const WEEK_DAYS_SHORT_2 = [
+    "mo",    // monday
+    "tu",    // tuesday
+    "we",    // wednesday
+    "th",    // thursday
+    "fr",    // friday
+    "sa",    // saturday
+    "su"     // sunday
+];
 export const DATE_TIME_PEACKER = {
     font_size: 30,
     select_font_size: 30,
@@ -208,6 +218,21 @@ export const MONTH = [
   'October',
   'November',
   'December'
+]
+
+export const MONTH_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec'
 ]
 
 export const REPEAT = ['never', 'day', 'week', 'month']

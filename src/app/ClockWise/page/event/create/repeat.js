@@ -5,7 +5,9 @@ import { eventServise } from '../../../utils/Globals';
 import { REPEAT } from '../../../utils/Constants';
 import { push } from '@zos/router'
 import {log} from '@zos/utils'
-
+import { PageIndicator } from '../../../common/widgets/pageIndicator';
+import { BackBtn } from '../../../common/widgets/backBtn';
+import { PageTitle } from '../../../common/widgets/PageTitle'
 
 const logger = log.getLogger('colors.js')
 let repeat_page_index = 0
@@ -13,22 +15,32 @@ let repeat_page_index = 0
 
 Page({
     repeat: ['Never','Every day', 'Every week', 'Every month'],
+    widgets: {
+        viewContainer: null,
+        title: null,
+        backBtn: null,
+        pageIndicator: null,
+    },
 
     onInit(params){
         logger.log('Init repeat choose page with params: ' + params)
-
-        const title = createWidget(widget.TEXT, {
-            text: getText('Repeat event:'),
-            w: 300,
-            h: 50,
-            x: (480-300)/2,
-            y: 50,
-            align_v: align.CENTER_V,
-            align_h: align.CENTER_H,
-            text_size: 35,
-            color: styleColors.white_smoke
+        this.widgets.title = PageTitle.renderTitle('Repeat:')
+        this.widgets.pageIndicator = new PageIndicator(this.repeat.length)
+        this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
+            x: 0,
+            y: 120,
+            w: 480,
+            h: 270,
+            scroll_enable: 1,
+            pos_y: -120,
+            page: 0,
+            scroll_frame_func: () => {
+                let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
+                let index = y / (320 / this.repeat.length)
+                this.widgets.pageIndicator.updatePageIndicator(index)
+            }
         })
-        const radioGroup = createWidget(widget.RADIO_GROUP, {
+        const radioGroup = this.widgets.viewContainer.createWidget(widget.RADIO_GROUP, {
             x: 0,
             y: 0,
             w: 480,
@@ -67,7 +79,7 @@ Page({
             h: 64
         })
 
-        const neverRepeatLabel = createWidget(widget.TEXT, {
+        const neverRepeatLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.repeat[0]),
             w: 250,
             h: 135,
@@ -78,7 +90,7 @@ Page({
             text_size: 32,
             color: styleColors.white_smoke
         })
-        const everyDayRepeatLabel = createWidget(widget.TEXT, {
+        const everyDayRepeatLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.repeat[1]),
             w: 250,
             h: 64,
@@ -89,7 +101,7 @@ Page({
             text_size: 32,
             color: styleColors.white_smoke
         })
-        const everyWeekRepeatLabel = createWidget(widget.TEXT, {
+        const everyWeekRepeatLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.repeat[2]),
             w: 250,
             h: 64,
@@ -100,7 +112,7 @@ Page({
             text_size: 32,
             color: styleColors.white_smoke
         })
-        const everyMonthRepeatLabel = createWidget(widget.TEXT, {
+        const everyMonthRepeatLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.repeat[3]),
             w: 250,
             h: 64,
@@ -114,44 +126,20 @@ Page({
 
         radioGroup.setProperty(prop.INIT, neverRepeatBtn)
 
-        createWidget(widget.BUTTON, {
-            x: 40,
-            y: 550,
-            w: 400,
-            h: 60,
-            radius: 30,
-            normal_color: styleColors.dark_green,
-            press_color: styleColors.dark_gray,
-            text: getText('Create'),
-            text_size: 32,
-            click_func: () => {
-                let result = JSON.parse(params)
-                result.repeat = REPEAT[repeat_page_index]
-                result.check_repeat = REPEAT[repeat_page_index]
-                logger.log('Repeat add to event: ' + result.repeat)
-                eventServise.createNewEvent(result)
-                push({
-                    url: 'page/index',
-                    params: 'clear'
-                })
-            }
+        this.widgets.backBtn = BackBtn.renderBackBtn('Create')
+        const click_func =  () => {
+            let result = JSON.parse(params)
+            result.repeat = REPEAT[repeat_page_index]
+            result.check_repeat = REPEAT[repeat_page_index]
+            logger.log('Repeat add to event: ' + result.repeat)
+            eventServise.createNewEvent(result)
+            console.log('print')
+            push({
+                url: 'page/index',
+                params: 'clear'
         })
-        createWidget(widget.BUTTON, {
-            x: 40,
-            y: 550+100,
-            w: 400,
-            h: 60,
-            radius: 30,
-            normal_color: styleColors.dark_gray,
-            press_color: styleColors.blue_violet,
-            text: getText('Main screen'),
-            text_size: 32,
-            click_func: () => {
-                logger.log('Push from repeat to the main page')
-                push ({
-                    url: 'page/index'
-                })
-            }
-        })
+        }
+        this.widgets.backBtn.click_func = click_func
+
     }
 })

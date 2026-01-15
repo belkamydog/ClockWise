@@ -1,10 +1,11 @@
 import { getText } from '@zos/i18n'
 import { widget, createWidget, deleteWidget, align, event, prop} from '@zos/ui'
-import { MONTH, styleColors } from '../utils/Constants'
+import { MONTH_SHORT, styleColors, WEEK_DAYS_SHORT, WEEK_DAYS_SHORT_2 } from '../utils/Constants'
 import { push } from '@zos/router'
-import { px } from "@zos/utils"
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { eventServise } from '../utils/Globals'
+import { PageIndicator } from '../common/widgets/PageIndicator'
+import { BackBtn } from '../common/widgets/backBtn'
 
 Page({
     widgets: {
@@ -14,17 +15,11 @@ Page({
             prev: null,
             next: null,
         },
-        year:{
-            border: null,
-            data: null,
-            prev: null,
-            next: null,
-        },
+        weekDays: [],
         pageIngicator: null,
+        viewContainer: null,
         days: [],
-        mainPageBtn: null,
         backBtn: null,
-
     },
     data:{
         scrollIndex: -30,
@@ -44,7 +39,12 @@ Page({
             return true
             },
         })
-    },    
+    },
+
+    getMonthTitle(){
+        return getText(MONTH_SHORT[this.data.month]) + ' ' + this.data.year
+    },
+
     renderMonth(){
         this.widgets.month.border = createWidget(widget.STROKE_RECT, {
             x: (480-250)/2,
@@ -63,7 +63,7 @@ Page({
             align_h: align.CENTER_H,
             align_v: align.CENTER_V,
             text_size: 30,
-            text: getText(MONTH[this.data.month]),
+            text: this.getMonthTitle(),
             color: styleColors.white_smoke
         })
         this.widgets.month.prev = createWidget(widget.BUTTON, {
@@ -79,10 +79,9 @@ Page({
                 if (this.data.month == 0) {
                     if (this.data.year >= new Date().getFullYear()-3)
                         this.data.year--
-                    this.widgets.year.data.setProperty(prop.TEXT, this.data.year.toString())
                 }
                 this.data.month = (--this.data.month % 12 + 12) % 12
-                this.widgets.month.data.setProperty(prop.TEXT, getText(MONTH[this.data.month]))
+                this.widgets.month.data.setProperty(prop.TEXT, this.getMonthTitle())
                 this.renderDays(this.data.month, this.data.year)
             }
         })
@@ -99,78 +98,42 @@ Page({
                 if (this.data.month == 11) {
                     if (this.data.year >= new Date().getFullYear()-3)
                         this.data.year++
-                    this.widgets.year.data.setProperty(prop.TEXT, this.data.year.toString())
                 }
                 this.data.month += 1
                 this.data.month = (this.data.month % 12 + 12) % 12
-                this.widgets.month.data.setProperty(prop.TEXT, getText(MONTH[this.data.month]))
+                this.widgets.month.data.setProperty(prop.TEXT, this.getMonthTitle())
                 this.renderDays(this.data.month, this.data.year)
             }
         })        
     },
-    renderYear(){
-        this.widgets.year.border = createWidget(widget.STROKE_RECT, {
-            x: (480-250)/2,
-            y: 480 - 120+15,
-            w: 250,
-            h: 70,
-            radius: 20,
-            line_width: 1,
-            color: styleColors.white_smoke
-        })
-        this.widgets.year.data = createWidget(widget.TEXT, {
-            x: (480-250)/2,
-            y: 480 - 120+15,
-            w: 250,
-            h: 70,
-            align_h: align.CENTER_H,
-            align_v: align.CENTER_V,
-            text_size: 30,
-            text: 2026,
-            color: styleColors.white_smoke
-        })
-        this.widgets.year.next = createWidget(widget.BUTTON, {
-            x: (480 - 40) / 2 + 100,
-            y: 480 - 120 + 17,
-            w: 40,
-            h: 60,
-            radius: 12,
-            color: styleColors.white_smoke,
-            text: '>',
-            text_size: 30,
-            click_func: () => {
-                if (this.data.year <= new Date().getFullYear()+3)
-                    this.data.year++
-                this.widgets.year.data.setProperty(prop.TEXT, this.data.year.toString())
-                this.renderDays(this.data.month, this.data.year)
-            }
-        })
-        this.widgets.year.prev = createWidget(widget.BUTTON, {
-            x: (480 - 40) / 2 - 100,
-            y: 480 - 120 + 17,
-            w: 40,
-            h: 60,
-            radius: 12,
-            color: styleColors.white_smoke,
-            text: '<',
-            text_size: 30,
-            click_func: () => {
-                if (this.data.year >= new Date().getFullYear()-3)
-                    this.data.year--
-                this.widgets.year.data.setProperty(prop.TEXT, this.data.year.toString())
-                this.renderDays(this.data.month, this.data.year)
-            }
-        })               
+
+    renderWeekDays(){
+        let x = 70
+        WEEK_DAYS_SHORT_2.forEach(element => {
+            const wd = createWidget(widget.TEXT, {
+                text: getText(element),
+                text_size: 25,
+                x: x,
+                y: 110,
+                h: 30,
+                w: 35,
+                color: styleColors.dark_gray
+            })
+            x += 52
+            this.widgets.weekDays.push(wd)
+        });
+
     },
+
     renderDays(month, year) {
         for (const i of this.widgets.days) deleteWidget(i)
         this.widgets.days = [];
         const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-        console.log(daysInMonth(year, month))
-        let x = 80;
-        let y = 120;
+        const startWeekDay = new Date(year, month, 1).getDay()
+        let x = startWeekDay == 0 ? 380 : startWeekDay * 52 + 20;
+        let y = 150;
         const now = new Date();
-        // const workLoad = eventServise.getMonthWorkLoad(new Date(year, month, 1));
+        const workLoad = eventServise.getMonthWorkLoad(new Date(year, month, 1));
         const currentDate = {
             year: now.getFullYear(),
             month: now.getMonth(),
@@ -188,6 +151,7 @@ Page({
         for (let i = 1; i <= daysInMonth(year, month); i++) {
             let color = styleColors.white_smoke;
             const dayDate = new Date(year, month, i);
+            const weekDay = dayDate.getDay()
             const isCurrentDay = 
                 dayDate.getFullYear() === currentDate.year &&
                 dayDate.getMonth() === currentDate.month &&
@@ -195,7 +159,7 @@ Page({
 
             if (isCurrentDay) {
                 console.log('isCurrent Day')
-                const currentDayBg = createWidget(widget.STROKE_RECT, {
+                const currentDayBg = this.widgets.viewContainer.createWidget(widget.STROKE_RECT, {
                     x: x-6,
                     y: y-6,
                     w: 45,
@@ -206,8 +170,8 @@ Page({
                 })
                 this.widgets.days.push(currentDayBg);
             }
-            // color = workLoad[i - 1] > 0 ? styleColors.green : styleColors.dim_gray;
-            const day = createWidget(widget.TEXT, {
+            color = workLoad[i - 1] > 0 ? styleColors.white_smoke : styleColors.dim_gray;
+            const day = this.widgets.viewContainer.createWidget(widget.TEXT, {
                 text: i.toString(),
                 text_size: 25,
                 x,
@@ -223,10 +187,10 @@ Page({
                     params: date
                 });
             });
-            x += 50;
-            if (i % 7 === 0) {
-                y += 50;
-                x = 80;
+            x += 52;
+            if (weekDay === 0) {
+                y += 80;
+                x = 70;
             }
             this.widgets.days.push(day);
         }
@@ -236,10 +200,27 @@ Page({
      * @param params Get current month events list
      */
     build(params){
+        this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
+            x: 0,
+            y: 150,
+            w: 480,
+            h: 220,
+            scroll_enable: 1,
+            pos_y: -145,
+            page: 0,
+            scroll_frame_func: () => {
+                let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
+                console.log('pos y ' + y)
+                let index = y / (520 / 2)
+                this.widgets.pageIndicator.updatePageIndicator(index)
+            }
+        });
+        this.widgets.pageIndicator = new PageIndicator(2)
         this.registerGes()
         this.renderMonth()
+        this.renderWeekDays()
         const now = new Date()
         this.renderDays(now.getMonth(), now.getFullYear())
-        this.renderYear()
+        this.widgets.backBtn = BackBtn.renderBackBtn('Main page', 'page/index')
     }
 })

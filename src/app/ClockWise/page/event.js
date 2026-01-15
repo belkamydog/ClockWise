@@ -1,3 +1,4 @@
+import { setScrollMode, SCROLL_MODE_SWIPER_HORIZONTAL } from '@zos/page'
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { createWidget, widget, align } from '@zos/ui'
@@ -6,53 +7,29 @@ import { Event } from '../utils/models/Event'
 import { eventServise } from '../utils/Globals'
 import { styleColors } from '../utils/Constants'
 import { getText } from '@zos/i18n'
+import { px } from '@zos/utils'
 
 
 Page ({
     widgets :{
-        eventLabel: null,
-        progressArc: null,
-        progressArcBackground: null,
-        timePeriod: null,
-        deleteBtn: null,
+        pageIndicator: null,
         deleteDialog: null,
-        editBtn: null,
-        eventStatus: null,
     },
 
     registerGes(){
         onGesture({
             callback: (event) => {
             if (event === GESTURE_RIGHT) {
-                push({
-                    url: 'page/index',
-                })
+                back()
             }
             return true
             },
         })
     },
 
-    onInit(params){
-        this.registerGes()
-        const current_event = JSON.parse(params)
-        const pageData = new Event(current_event)
-        this.widgets.deleteDialog = createModal({
-            content: getText('Delete this event') + '?' ,
-            autoHide: false,
-            show: false,
-            onClick: (keyObj) => {
-                const { type } = keyObj
-                if (type === MODAL_CONFIRM) {
-                    eventServise.deleteEvent(pageData.id)
-                    back()
-                } else {
-                    this.widgets.deleteDialog.show(false)
-                }
-            },
-        })
-        this.eventLabel = createWidget(widget.TEXT, {
-            x: (480-300)/2,
+    renderEventPage(current_event, index){
+        createWidget(widget.TEXT, {
+            x: index+(480-300)/2,
             y: 200,
             w: 300,
             h: 46,
@@ -62,8 +39,8 @@ Page ({
             text_size: 40,
             text: current_event.description
         }),
-        this.timePeriod = createWidget(widget.TEXT, {
-            x: (480-300)/2,
+        createWidget(widget.TEXT, {
+            x: index+(480-300)/2,
             y: 270,
             w: 300,
             h: 46,
@@ -71,11 +48,10 @@ Page ({
             align_v: align.CENTER_V,
             color: styleColors.white,
             text_size: 38,
-            text: pageData.getPeriod()
+            text: current_event.getPeriod()
         }),
-
-        createWidget(widget.TEXT, {
-            x: 0,
+         createWidget(widget.TEXT, {
+            x: index,
             y: 340,
             w: 480,
             h: 46,
@@ -83,10 +59,10 @@ Page ({
             align_v: align.CENTER_V,
             color: styleColors.white,
             text_size: 40,
-            text: pageData.getDuration()
+            text: current_event.getDuration()
         }),
-        this.eventStatus = createWidget(widget.TEXT, {
-            x: 0,
+        createWidget(widget.TEXT, {
+            x: index,
             y: 130,
             w: 480,
             h: 40,
@@ -94,10 +70,10 @@ Page ({
             align_v: align.CENTER_V,
             color: styleColors.white,
             text_size: 38,
-            text: pageData.getStatus()
+            text: current_event.getStatus()
         }),        
-        this.progressArcBackground = createWidget(widget.ARC_PROGRESS, {
-            center_x: 240,
+        createWidget(widget.ARC_PROGRESS, {
+            center_x: index + 240,
             center_y: 240,
             radius: 220,
             start_angle: -150,
@@ -106,29 +82,29 @@ Page ({
             line_width: 20,
             level: 100
         }),
-        this.progressArc = createWidget(widget.ARC_PROGRESS, {
-            center_x: 240,
+        createWidget(widget.ARC_PROGRESS, {
+            center_x: index + 240,
             center_y: 240,
             radius: 220,
             start_angle: -150,
             end_angle: 150,
-            color: pageData.color,
+            color: current_event.color,
             line_width: 20,
-            level: pageData.getlevel()
+            level: current_event.getlevel()
         }),
-        this.widgets.deleteBtn = createWidget(widget.BUTTON, {
-            x: (480-70)/2,
+        createWidget(widget.BUTTON, {
+            x: index + (480-70)/2,
             y: 40,
             w: 70,
             h: 70,
             normal_src: 'delete.png',
             press_src: 'delete.png',
             click_func: (button_widget) => {
-                this.widgets.deleteDialog.show(true)
+                this.initDeleteDialog(current_event)
             }
         })
-        this.widgets.editBtn = createWidget(widget.BUTTON, {
-            x: (480-70)/2,
+        createWidget(widget.BUTTON, {
+            x: index + (480-70)/2,
             y: 400,
             w: 70,
             h: 70,
@@ -137,9 +113,65 @@ Page ({
             click_func: (button_widget) => {
                 push({
                     url: 'page/event/edit/menu',
-                    params: JSON.stringify(pageData)
+                    params: JSON.stringify(current_event)
                 })
             }
         })
+    },
+
+    renderAllEvents(listOfEvents){
+        let x = 0
+        listOfEvents.forEach(element => {
+            console.log(JSON.stringify(element.description))
+            this.renderEventPage(new Event(element), x)
+            x += 480
+        });
+    },
+
+    initDeleteDialog(current_event){
+        createModal({
+            content: getText('Delete this event') + '?' ,
+            autoHide: true,
+            show: true,
+            onClick: (keyObj) => {
+                const { type } = keyObj
+                if (type === MODAL_CONFIRM) {
+                    eventServise.deleteEvent(current_event.id)
+                    push({
+                        url: 'page/index'
+                    })
+                }
+            },
+        })
+    },
+
+    onInit(params){
+        this.registerGes()
+        let listOfEvents = null;
+        try {
+            listOfEvents = JSON.parse(params)
+        } catch(error){
+            listOfEvents = []
+        }
+        setScrollMode({
+            mode: SCROLL_MODE_SWIPER_HORIZONTAL,
+            options: {
+                width: 480,
+                count: listOfEvents.length
+            }
+        })
+        if (listOfEvents.length > 1){
+            this.widgets.pageIndicator = createWidget(widget.PAGE_INDICATOR, {
+                x: 0,
+                y: px(120),
+                w: px(480),
+                h: px(10),
+                align_h: align.CENTER_H,
+                h_space: 10,
+                select_src: 'indicator/select.png',
+                unselect_src: 'indicator/unselect.png'
+            })
+        }
+        this.renderAllEvents(listOfEvents)
     }
 })

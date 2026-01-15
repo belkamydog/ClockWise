@@ -74,8 +74,7 @@ Page({
                 eventServise.editEvent(needToEdit)
                 logger.log('Edit start date done, new start: ' +  needToEdit.start)
                 push({
-                    url: 'page/event',
-                    params: JSON.stringify(needToEdit),
+                    url: 'page/index',
                 })
             }
         }

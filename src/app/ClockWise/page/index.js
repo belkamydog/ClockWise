@@ -11,7 +11,6 @@ import { Event } from '../utils/models/Event';
 import { styleColors } from '../utils/Constants'
 import { EventService } from '../utils/services/EventService'
 import { SettingsService } from '../utils/services/SettingsService'
-
 import { BasePage } from '@zeppos/zml/base-page'
 
 const logger = log.getLogger('Main page')
@@ -216,13 +215,17 @@ Page(
         alpha: 100 
       })
       this.widgets.canvas.addEventListener(event.CLICK_UP, function cb(info) {
+        const eventsArray = []
         for (const event of eventServise.getActualEvents()){
           if (EventService.isThisEvent(info.x, info.y, event)){
+            eventsArray.push(event)
+          }
+        }
+        if (eventsArray.length > 0) {
             push({
               url: 'page/event',
-              params: JSON.stringify(event),
+              params: JSON.stringify(eventsArray),
             })
-          }
         }
       })
     },
@@ -321,6 +324,7 @@ Page(
         this.renderEvents(eventServise.getActualEvents())
         this.iniitCentralBackground()
         this.initDigitalTime()
+        // CancelOkBtns.renderCancelOkBtns()
       }
     },
   })

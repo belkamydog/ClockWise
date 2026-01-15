@@ -1,33 +1,43 @@
 import { createWidget, widget, prop } from '@zos/ui'
-import { getText } from '@zos/i18n'
 import { COLORS } from '../../../utils/Constants'
 import { push } from '@zos/router'
 import {log} from '@zos/utils'
+import {PageTitle} from '../../../common/widgets/PageTitle'
+import { PageIndicator } from '../../../common/widgets/pageIndicator'
+import { BackBtn } from '../../../common/widgets/backBtn'
 
 const logger = log.getLogger('colors.js')
 
 Page({
+    widgets: {
+        title: null,
+        backBtn: null,
+        pageIndicator: null,
+        viewContainer: null,
+    },
+
     onInit(params){
         logger.log('Init color peacker page with params: ' + params)
-        const title = createWidget(widget.TEXT, {
-            x: 140,
-            y: 50,
-            text: getText('Event color'),
-            text_size: 40,
-            w: 480,
-            h: 50,
-        })
-        const scrollList = createWidget(widget.VIEW_CONTAINER, {
+        this.widgets.title = PageTitle.renderTitle('Event color')
+        this.widgets.pageIndicator = new PageIndicator(COLORS.length/4)
+        this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
             x: 0,
-            y: 120,
+            y: 150,
             w: 480,
-            h: 280,
-            pos_y: -80
+            h: 220,
+            scroll_enable: 1,
+            pos_y: -80,
+            page: 0,
+            scroll_frame_func: () => {
+                let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
+                let index = y / (400 / (COLORS.length/4))
+                this.widgets.pageIndicator.updatePageIndicator(index)
+            }
         })
         for (let row = 0, color_i = 0; row < COLORS.length/4; row++){
             for (let col = 0; col < 3; col++){
                 const currentColor = COLORS[color_i++]
-                const btn = scrollList.createWidget(widget.BUTTON, {
+                const btn = this.widgets.viewContainer.createWidget(widget.BUTTON, {
                     x: 80 + 100 * col + 20,
                     y: 80 + 100 * row,
                     w: 80,
@@ -48,5 +58,6 @@ Page({
                 })
             }
         }
+        this.widgets.backBtn = BackBtn.renderBackBtn('Cancel', 'page/index')
     }
 })

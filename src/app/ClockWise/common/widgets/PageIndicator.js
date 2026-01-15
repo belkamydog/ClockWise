@@ -1,5 +1,5 @@
 import { createWidget, widget, prop } from '@zos/ui'
-import { styleColors } from '../Constants'
+import { styleColors } from '../../utils/Constants'
 
 export class PageIndicator {
     background = null

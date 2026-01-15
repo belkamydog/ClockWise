@@ -4,14 +4,16 @@ import { push } from '@zos/router'
 import {log} from '@zos/utils'
 import { getText } from '@zos/i18n'
 import { styleColors } from '../utils/Constants'
-import { PageIndicator } from '../utils/layouts/pageIndicator'
+import { BackBtn } from '../common/widgets/backBtn'
+import { PageIndicator } from '../common/widgets/PageIndicator'
 
 const logger = log.getLogger('Main menu')
 
 Page({
     widgets: {
         pageIngicator: null,
-        viewContainer: null
+        viewContainer: null,
+        backBtn: null,
     },
 
     initBg(){
@@ -91,7 +93,6 @@ Page({
                 ic.updatePageIndicator(index)
             }
         })
-
-        
+        this.widgets.backBtn = BackBtn.renderBackBtn('Main page', 'page/index')
     }
 })

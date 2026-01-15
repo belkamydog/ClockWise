@@ -4,9 +4,15 @@ import { push } from '@zos/router'
 import { getText } from '@zos/i18n'
 import { styleColors } from '../../utils/Constants'
 import { eventServise } from '../../utils/Globals'
-import { PageIndicator } from '../../utils/layouts/pageIndicator'
+import { PageIndicator } from '../../common/widgets/PageIndicator'
+import { BackBtn } from '../../common/widgets/backBtn'
+import { PageTitle } from '../../common/widgets/PageTitle'
 
 Page({
+    widgets:{
+        title: null,
+        backBtn: null,
+    },
 
     initClearHistoryDialog(){
         const dialog = createModal({
@@ -29,7 +35,8 @@ Page({
         dialog.show(true) 
     },
 
-    onInit(){
+    build(){
+        this.widgets.title = PageTitle.renderTitle('Settings')
         const menu = [
             {src:'', text: getText('Auto delete')},
             {src:'', text: getText('Clear history')},
@@ -61,5 +68,6 @@ Page({
                 pageIndicator.updatePageIndicator(index)
             },
         })
+        this.widgets.backBtn = BackBtn.renderBackBtn('Main page', 'page/index')
     }
 })

@@ -1,10 +1,13 @@
-import { createWidget, widget, align, prop, getProperty } from '@zos/ui'
+import { createWidget, widget, align, prop } from '@zos/ui'
 import { back } from '@zos/router'
 import { getText } from '@zos/i18n'
 import { AUTO_DELETE, styleColors } from '../../utils/Constants'
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { SettingsService } from '../../utils/services/SettingsService'
-import { PageIndicator } from '../../utils/layouts/pageIndicator'
+import { PageIndicator } from '../../common/widgets/PageIndicator'
+import { PageTitle } from '../../common/widgets/PageTitle'
+import { BackBtn } from '../../common/widgets/backBtn'
+
 
 
 let index_auto_delete = 0
@@ -13,6 +16,9 @@ Page({
     widgets:{
         viewContainer: null,
         pageIndicator: null,
+        title: null,
+        apply: null,
+        backBtn: null,
     },
     attentionDialog(){
         const attention = getText('Attention! Some events can be deleted!') 
@@ -132,7 +138,8 @@ Page({
             radioGroup.setProperty(prop.INIT, monthDelete)
     },
     
-    onInit(){
+    build(){
+        this.widgets.title = PageTitle.renderTitle('Delete events:')
         this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
             x: 0,
             y: 100,
@@ -140,6 +147,7 @@ Page({
             h: 280,
             scroll_enable: 1,
             page: 0,
+            pos_y: -120,
             scroll_frame_func: () => {
                 let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
                 let index = y / (300 / 4)
@@ -147,38 +155,18 @@ Page({
             }
         });
         this.widgets.pageIndicator = new PageIndicator(this.actions.length)
-        createWidget(widget.TEXT, {
-            text: getText('Delete events:'),
-            w: 300,
-            h: 50,
-            x: (480-300)/2,
-            y: 50,
-            align_v: align.CENTER_V,
-            align_h: align.CENTER_H,
-            text_size: 35,
-            color: styleColors.white_smoke
-        })
         this.initDeleteRadioGroup()
-        createWidget(widget.BUTTON, {
-            x: 40,
-            y: 400,
-            w: 400,
-            h: 80,
-            radius: 0,
-            normal_color: styleColors.dark_red,
-            press_color: styleColors.blue_violet,
-            text: getText('Apply'),
-            text_size: 32,
-            click_func: () => {
-                if (index_auto_delete > 0){
-                    this.attentionDialog()
-                } else {
-                    const settings = SettingsService.loadSettings()
-                    settings.autoDelete = AUTO_DELETE[index_auto_delete]
-                    SettingsService.saveSettings(settings)
-                    back()
-                }
+        this.widgets.backBtn = BackBtn.renderBackBtn('Apply', 'page/settings/menu') 
+        const click_func = () => {
+            if (index_auto_delete > 0){
+                this.attentionDialog()
+            } else {
+                const settings = SettingsService.loadSettings()
+                settings.autoDelete = AUTO_DELETE[index_auto_delete]
+                SettingsService.saveSettings(settings)
+                back()
             }
-        })
+        }
+        this.widgets.backBtn.click_func = click_func
     }
 }) 

@@ -35,8 +35,7 @@ Page ({
                 logger.log('Edit description done: ' + needToEditEvent.description)
                 eventServise.editEvent(needToEditEvent)
                 push({
-                    url: 'page/event',
-                    params: JSON.stringify(needToEditEvent)
+                    url: 'page/index',
                 })
             },
             onCancel: (keyboardWidget, result) => {

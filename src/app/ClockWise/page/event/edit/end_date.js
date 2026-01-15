@@ -75,8 +75,7 @@ Page({
                 eventServise.editEvent(needToEdit)
                 logger.log('Edit end date done, new end: ' +  needToEdit.end)
                 push({
-                    url: 'page/event',
-                    params: JSON.stringify(needToEdit),
+                    url: 'page/index',
                 })
             }
         }

@@ -1,3 +1,64 @@
+
+msgid "Jan"
+msgstr "Янв"
+
+msgid "Feb"
+msgstr "Фев"
+
+msgid "Mar"
+msgstr "Мар"
+
+msgid "Apr"
+msgstr "Апр"
+
+msgid "May"
+msgstr "Май"
+
+msgid "Jun"
+msgstr "Июн"
+
+msgid "Jul"
+msgstr "Июл"
+
+msgid "Aug"
+msgstr "Авг"
+
+msgid "Sep"
+msgstr "Сен"
+
+msgid "Oct"
+msgstr "Окт"
+
+msgid "Nov"
+msgstr "Ноя"
+
+msgid "Dec"
+msgstr "Дек"
+
+msgid "mo"
+msgstr "пн"
+
+msgid "tu"
+msgstr "вт"
+
+msgid "we"
+msgstr "ср"
+
+msgid "th"
+msgstr "чт"
+
+msgid "fr"
+msgstr "пт"
+
+msgid "sa"
+msgstr "сб"
+
+msgid "su"
+msgstr "вс"
+
+msgid "Main page"
+msgstr "На главную"
+
 msgid "Calendar"
 msgstr "Календарь"
 
@@ -59,13 +120,20 @@ msgstr "Начало события"
 msgid "Event end"
 msgstr "Окончание события"
 
+msgid "Repeat:"
+msgstr "Повторять:"
 
 msgid "Clear history"
 msgstr "Очистить историю"
 
+msgid "Cancel"
+msgstr "Отмена"
 
 msgid "Auto delete"
 msgstr "Авто удаление"
+
+msgid "Event color"
+msgstr "Цвет события"
 
 msgid "Never"
 msgstr "Никогда"
