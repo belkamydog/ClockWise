@@ -3,6 +3,7 @@ import { FileService } from './FileService'
 import { SettingsService } from './SettingsService'
 import { Event } from '../models/Event'
 import { HOUR_MS, REPEAT } from '../Constants'
+import { CommonUtils } from '../commonUtils'
 
 const logger = log.getLogger('EventService')
 
@@ -166,6 +167,51 @@ export class EventService {
         }
     }
 
+    getListOfEvents(date){
+        this.#autoDeleteEvents()
+        const loadedEvents = this.#loadEvents()
+        let resultList = []
+        const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0)
+        const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 999)
+        const period = {start: start, end: end}
+        for (const ev of loadedEvents){
+            ev.check_repeat = ev.repeat
+            if (ev.repeat != 'never') {
+                this.#repeateRule(new Event(ev), period, resultList)
+            }
+            else {
+                if (new Date(ev.start) >= period.start && new Date(ev.end) <= period.end)
+                    resultList.push(new Event(ev))
+            }
+        }
+        resultList.sort((a, b) => new Date(a.start) - new Date(b.start));
+        return resultList
+    }
+    
+    getMonthListOfEvents(date){
+        this.#autoDeleteEvents()
+        const loadedEvents = this.#loadEvents()
+        let resultList = []
+        const daysInMonth = (year, month) => new Date(year, month+1, 0).getDate();
+        const year = date.getFullYear()
+        const month = date.getMonth()
+        const start = new Date(year, month, 1, 0, 0, 0)
+        const end = new Date(year, month, daysInMonth(year, month), 23, 59, 999)
+        const period = {start: start, end: end}
+        for (const ev of loadedEvents){
+            ev.check_repeat = ev.repeat
+            if (ev.repeat != 'never') {
+                this.#repeateRule(new Event(ev), period, resultList)
+            }
+            else {
+                if (new Date(ev.start) >= period.start && new Date(ev.end) <= period.end)
+                    resultList.push(new Event(ev))
+            }
+        }
+        resultList.sort((a, b) => new Date(a.start) - new Date(b.start));
+        return resultList
+    }
+
     getWeekListOfEvents(date){
         this.#autoDeleteEvents()
         const week = EventService.getWeekRange(date)
@@ -185,6 +231,57 @@ export class EventService {
         for (const i of resultList) console.log('resultList ' + JSON.stringify(i))
         return resultList
     }
+
+    getMonthWorkLoad(date) {
+        const listOfEvents = this.getMonthListOfEvents(date);
+        const eventsByDay = this.#groupEventsByDay(listOfEvents);
+        const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+        let monthWorkLoad = [];
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const monthSize = daysInMonth(year, month);
+        for (let i = 1; i <= monthSize; i++) {
+            const currentDay = new Date(year, month, i);
+            monthWorkLoad.push(this.#getDayWorkLoad(currentDay, eventsByDay));
+        }
+        return monthWorkLoad;
+    }
+
+    #groupEventsByDay(events) {
+        const grouped = {};
+        for (const event of events) {
+            const dateKey = this.#getDateKey(new Date(event.start));
+            if (!grouped[dateKey]) {
+                grouped[dateKey] = [];
+            }
+            grouped[dateKey].push(event);
+        }
+        return grouped;
+    }
+
+    #getDateKey(date) {
+        return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    }
+
+    #getDayWorkLoad(date, eventsByDay) {
+        const dateKey = this.#getDateKey(date);
+        const eventsForDay = eventsByDay[dateKey] || [];
+        
+        let result = 0;
+        for (const event of eventsForDay) {
+            result += this.#calculateEventDuration(event);
+        }
+        
+        return result;
+    }
+
+    #calculateEventDuration(event) {
+        // Пример расчета длительности события в минутах
+        const start = new Date(event.start);
+        const end = new Date(event.end);
+        return (end - start) / 60000; // в минутах
+    }
+
 
     /**
      * Automatically deletes outdated events from the list

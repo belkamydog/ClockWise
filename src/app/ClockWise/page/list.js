@@ -8,6 +8,7 @@ import {log} from '@zos/utils'
 import { Event } from '../utils/models/Event';
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { EventService } from '../utils/services/EventService';
+import { PageIndicator } from '../utils/layouts/pageIndicator'
 
 
 const logger = log.getLogger('page/list.js')
@@ -19,7 +20,7 @@ Page({
         callback: (event) => {
           if (event === GESTURE_RIGHT) {
             push({
-              url: 'page/index',
+              url: 'page/calendar',
             })
           }
           return true
@@ -55,9 +56,11 @@ Page({
       align_v: align.CENTER_V,
       color: styleColors.white
     })
-    const period = EventService.getWeekRange(date)
+    let dateText = Event.addZero(date.getDate()) + '.' + 
+                   Event.addZero((date.getMonth()+1)) + '.' + 
+                   date.getFullYear()
     createWidget(widget.TEXT, {
-        text: Event.addZero(period.start.getDate()) + '.'+ Event.addZero((period.start.getMonth()+1)) + ' - ' + Event.addZero(period.end.getDate()-1) + '.'+ Event.addZero((period.end.getMonth()+1)),
+        text: dateText,
         x: 0,
         y: 90,
         w: 480,
@@ -71,8 +74,8 @@ Page({
 
   addKeys(arrEv) {
       let result = [];
-            const previous = {
-          previous_week: 'previous.png'
+      const previous = {
+          previous: 'previous.png'
       };
       result.push(previous);
       for (const event of arrEv) {
@@ -99,13 +102,12 @@ Page({
           result.push(eventCopy);
       }
       const next = {
-          next_week: 'next.png'
+          next: 'next.png'
       };
       result.push(next);
       
       return result;
   },
-
 
   ifEmptyListOfEventsLabel(){
     createWidget(widget.TEXT, {
@@ -121,19 +123,20 @@ Page({
     })
   },
 
+  /**
+   * @param params { Date object}
+   */
   onInit(params) {
     this.registerGes()
-    let period = null
+    let date = null
     try{
-      let date = JSON.parse(params)
-      period = new Date(date) 
+      date = new Date(params)
     } catch {
-      period = new Date()
+      date = new Date()
     }
-    this.initBg()
-    this.initTitle(period);
-    const listOfEvents = eventServise.getWeekListOfEvents(period)
-
+    const listOfEvents = eventServise.getListOfEvents(date)
+    const pageIndicator = new PageIndicator(listOfEvents.length + 2)
+    this.initTitle(date);
     const separatedByColorInd = EventService.separateListToPastCurrentFutureEvents(listOfEvents)
     const weekEvents = this.addKeys(listOfEvents)
     logger.log('Init list of events: ' + JSON.stringify(weekEvents))
@@ -144,10 +147,10 @@ Page({
     const scrollList = createWidget(widget.SCROLL_LIST, {
         x: (480-380)/2,
         y: 140,
-        h: 480,
+        h: 450,
         w: 380,
         radius:10,
-        item_space: 20,
+        item_space: 10,
         snap_to_center: true,
         item_enable_horizon_drag: true,
         item_drag_max_distance: -120,
@@ -156,7 +159,7 @@ Page({
             type_id: 0,
             item_bg_color: styleColors.brown,
             item_bg_radius: 75,
-            image_view: [{ x: (380-50)/2, y: -70, w: 60, h: 60, key: 'previous_week', action: true }],
+            image_view: [{ x: (380-50)/2, y: -70, w: 60, h: 60, key: 'previous', action: true }],
             image_view_count: 1,
             item_height: 0
           },
@@ -224,7 +227,7 @@ Page({
             type_id: 4,
             item_bg_color: styleColors.brown,
             item_bg_radius: 75,
-            image_view: [{ x: (380-50)/2, y: 0, w: 80, h: 80, key: 'next_week', action: true }],
+            image_view: [{ x: (380-50)/2, y: 10, w: 80, h: 80, key: 'next', action: true }],
             image_view_count: 1,
             item_height: 0
           },
@@ -232,7 +235,9 @@ Page({
         item_config_count: 5,
         data_array: weekEvents,
         data_count: weekEvents.length,
-        item_focus_change_func: (list, index, focus) => {},
+        item_focus_change_func: (list, index, focus) => {
+          pageIndicator.updatePageIndicator(index)
+        },
         item_click_func: (item, index, data_key) => {
           if (data_key === 'del_img') {
                 const deleteDialog = createModal({
@@ -254,18 +259,18 @@ Page({
                 })
                 deleteDialog.show(true) 
           }
-          else if (data_key === 'next_week'){
-            const newWeek = new Date(period.getTime() + HOUR_MS * 24 * 7)
+          else if (data_key === 'next'){
+            const newDate = new Date(new Date(params).getTime() + 24 * HOUR_MS)
             push({
               url: 'page/list',
-              params: JSON.stringify(newWeek)
+              params: newDate
             })
           }
-          else if (data_key === 'previous_week'){
-            const newWeek = new Date(period.getTime() - HOUR_MS * 24 * 7)
+          else if (data_key === 'previous'){
+            const newDate = new Date(new Date(params).getTime() - 24 * HOUR_MS)
             push({
               url: 'page/list',
-              params: JSON.stringify(newWeek)
+              params: newDate
             })
           }
           else if (data_key == 'edit_img'){

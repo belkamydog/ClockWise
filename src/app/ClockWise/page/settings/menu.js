@@ -4,24 +4,10 @@ import { push } from '@zos/router'
 import { getText } from '@zos/i18n'
 import { styleColors } from '../../utils/Constants'
 import { eventServise } from '../../utils/Globals'
+import { PageIndicator } from '../../utils/layouts/pageIndicator'
 
 Page({
 
-    initBg(){
-        this.circle = createWidget(widget.CIRCLE, {
-        center_x: 240,
-        center_y: 240,
-        radius: 227,
-        color: styleColors.white_smoke,
-        })
-        this.circle = createWidget(widget.CIRCLE, {
-        center_x: 240,
-        center_y: 240,
-        radius: 225,
-        color: styleColors.black,
-        })
-    },
-    
     initClearHistoryDialog(){
         const dialog = createModal({
             content: getText('Clear history') + '?',
@@ -44,11 +30,11 @@ Page({
     },
 
     onInit(){
-        this.initBg()
         const menu = [
             {src:'', text: getText('Auto delete')},
             {src:'', text: getText('Clear history')},
         ]
+        const pageIndicator = new PageIndicator(menu.length)
         cycleList = createWidget(widget.CYCLE_IMAGE_TEXT_LIST, {
             x: (480-330)/2,
             y: 120,
@@ -72,7 +58,7 @@ Page({
                 }
             },
             item_focus_change_func: (cycleList, index, isFocus) => {
-
+                pageIndicator.updatePageIndicator(index)
             },
         })
     }

@@ -1,15 +1,19 @@
-import { createWidget, widget, align, prop } from '@zos/ui'
+import { createWidget, widget, align, prop, getProperty } from '@zos/ui'
 import { back } from '@zos/router'
 import { getText } from '@zos/i18n'
 import { AUTO_DELETE, styleColors } from '../../utils/Constants'
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { SettingsService } from '../../utils/services/SettingsService'
+import { PageIndicator } from '../../utils/layouts/pageIndicator'
 
 
 let index_auto_delete = 0
 Page({
     actions: ['Never','Older than day', 'Older than week', 'Older than month'],
-
+    widgets:{
+        viewContainer: null,
+        pageIndicator: null,
+    },
     attentionDialog(){
         const attention = getText('Attention! Some events can be deleted!') 
         const dialog = createModal({
@@ -33,7 +37,7 @@ Page({
     },
 
     initDeleteRadioGroup(){
-        const radioGroup = createWidget(widget.RADIO_GROUP, {
+        const radioGroup = this.widgets.viewContainer.createWidget(widget.RADIO_GROUP, {
             x: 0,
             y: 0,
             w: 480,
@@ -73,7 +77,7 @@ Page({
         })
 
 
-        const neverDeleteLabel = createWidget(widget.TEXT, {
+        const neverDeleteLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.actions[0]),
             w: 250,
             h: 135,
@@ -84,7 +88,7 @@ Page({
             text_size: 32,
             color: styleColors.white_smoke
         })
-        const dayDeleteLabel = createWidget(widget.TEXT, {
+        const dayDeleteLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.actions[1]),
             w: 250,
             h: 64,
@@ -95,7 +99,7 @@ Page({
             text_size: 32,
             color: styleColors.white_smoke
         })
-        const weekDeleteLabel = createWidget(widget.TEXT, {
+        const weekDeleteLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.actions[2]),
             w: 250,
             h: 64,
@@ -106,7 +110,7 @@ Page({
             text_size: 32,
             color: styleColors.white_smoke
         })
-        const monthDeleteLabel = createWidget(widget.TEXT, {
+        const monthDeleteLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.actions[3]),
             w: 250,
             h: 64,
@@ -129,6 +133,20 @@ Page({
     },
     
     onInit(){
+        this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
+            x: 0,
+            y: 100,
+            w: 480,
+            h: 280,
+            scroll_enable: 1,
+            page: 0,
+            scroll_frame_func: () => {
+                let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
+                let index = y / (300 / 4)
+                this.widgets.pageIndicator.updatePageIndicator(index)
+            }
+        });
+        this.widgets.pageIndicator = new PageIndicator(this.actions.length)
         createWidget(widget.TEXT, {
             text: getText('Delete events:'),
             w: 300,
@@ -143,13 +161,13 @@ Page({
         this.initDeleteRadioGroup()
         createWidget(widget.BUTTON, {
             x: 40,
-            y: 550,
+            y: 400,
             w: 400,
-            h: 60,
-            radius: 30,
+            h: 80,
+            radius: 0,
             normal_color: styleColors.dark_red,
             press_color: styleColors.blue_violet,
-            text: getText('Submit'),
+            text: getText('Apply'),
             text_size: 32,
             click_func: () => {
                 if (index_auto_delete > 0){
@@ -163,5 +181,4 @@ Page({
             }
         })
     }
-
 }) 

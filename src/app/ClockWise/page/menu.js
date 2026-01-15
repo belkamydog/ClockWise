@@ -1,25 +1,24 @@
-import { createWidget, widget } from '@zos/ui'
+import { createWidget, widget, prop } from '@zos/ui'
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { push } from '@zos/router'
 import {log} from '@zos/utils'
 import { getText } from '@zos/i18n'
 import { styleColors } from '../utils/Constants'
+import { PageIndicator } from '../utils/layouts/pageIndicator'
 
 const logger = log.getLogger('Main menu')
 
 Page({
+    widgets: {
+        pageIngicator: null,
+        viewContainer: null
+    },
 
     initBg(){
         this.circle = createWidget(widget.CIRCLE, {
         center_x: 240,
         center_y: 240,
-        radius: 227,
-        color: styleColors.white_smoke,
-        })
-        this.circle = createWidget(widget.CIRCLE, {
-        center_x: 240,
-        center_y: 240,
-        radius: 225,
+        radius: 240,
         color: styleColors.black,
         })
     },
@@ -47,13 +46,13 @@ Page({
     },
 
     onInit(){
-        this.initBg()
         const menu = [
             {src:'', text: getText('New event')},
-            {src:'', text: getText('List of events')},
+            {src:'', text: getText('Calendar')},
             {src:'', text: getText('Settings')},
             {src:'', text: getText('About')},
         ]
+        const ic = new PageIndicator(menu.length)
         cycleList = createWidget(widget.CYCLE_IMAGE_TEXT_LIST, {
             x: (480-330)/2,
             y: (480-300)/2,
@@ -73,7 +72,7 @@ Page({
                 } else if (index == 1){
                     logger.log('Push to the list of events page')
                     push({
-                        url: 'page/list',
+                        url: 'page/calendar',
                     })
                 } else if (index == 2) {
                     logger.log('Push to the settings page')
@@ -87,7 +86,12 @@ Page({
                     })
                 }
 
+            },
+            item_focus_change_func: (cycleList, index, isFocus) =>{
+                ic.updatePageIndicator(index)
             }
         })
+
+        
     }
 })

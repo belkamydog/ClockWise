@@ -1,5 +1,11 @@
+msgid "Calendar"
+msgstr "Календарь"
+
 msgid "After"
 msgstr "Через"
+
+msgid "Apply"
+msgstr "Применить"
 
 msgid "h"
 msgstr "ч"
