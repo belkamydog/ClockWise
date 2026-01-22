@@ -22,7 +22,7 @@ Page({
         color: styleColors.white_smoke
       })
       createWidget(widget.TEXT, {
-        text: getText('Version') + ': 1.0.0',
+        text: getText('Version') + ': 1.1',
         x: 50,
         y: 170,
         w: 440,

@@ -6,25 +6,19 @@ import { getText } from '@zos/i18n'
 import { styleColors } from '../utils/Constants'
 import { BackBtn } from '../common/widgets/backBtn'
 import { PageIndicator } from '../common/widgets/PageIndicator'
+import {PageTitle} from '../common/widgets/PageTitle'
 
 const logger = log.getLogger('Main menu')
 
 Page({
     widgets: {
+        cyckleList: null,
+        pageTitle: null,
         pageIngicator: null,
         viewContainer: null,
         backBtn: null,
     },
 
-    initBg(){
-        this.circle = createWidget(widget.CIRCLE, {
-        center_x: 240,
-        center_y: 240,
-        radius: 240,
-        color: styleColors.black,
-        })
-    },
-    
     initNewEventDialog(){
         const dialog = createModal({
             content: getText('Create event') + '?',
@@ -54,12 +48,13 @@ Page({
             {src:'', text: getText('Settings')},
             {src:'', text: getText('About')},
         ]
-        const ic = new PageIndicator(menu.length)
-        cycleList = createWidget(widget.CYCLE_IMAGE_TEXT_LIST, {
+        this.widgets.pageTitle = PageTitle.renderTitle('Main menu')
+        this.widgets.pageIngicator = new PageIndicator(menu.length)
+        this.widgets.cycleList = createWidget(widget.CYCLE_IMAGE_TEXT_LIST, {
             x: (480-330)/2,
-            y: (480-300)/2,
+            y: (480-300)/2+20,
             w: 330,
-            h: 300,
+            h: 270,
             data_array: menu,
             data_size: menu.length,
             item_height: 120,
@@ -90,7 +85,7 @@ Page({
 
             },
             item_focus_change_func: (cycleList, index, isFocus) =>{
-                ic.updatePageIndicator(index)
+                this.widgets.pageIngicator.updatePageIndicator(index)
             }
         })
         this.widgets.backBtn = BackBtn.renderBackBtn('Main page', 'page/index')

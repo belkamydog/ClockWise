@@ -32,6 +32,7 @@ export class Event {
     end
     color
     repeat
+    repeat_deny_list = []
     startAngle
     endAngle
 
@@ -77,6 +78,8 @@ export class Event {
         const {startAngle, endAngle } = this.#calculateEventAngles(event, new Date())
         this.startAngle = startAngle
         this.endAngle = endAngle
+        if (event.repeat_deny_list) this.repeat_deny_list = event.repeat_deny_list
+        else this.repeat_deny_list = []
     }
 
     /**

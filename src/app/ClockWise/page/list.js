@@ -1,45 +1,63 @@
-import { createWidget, widget, prop, align } from '@zos/ui'
-import { createModal, MODAL_CONFIRM } from '@zos/interaction'
+import { createWidget, widget, align } from '@zos/ui'
 import { eventServise } from '../utils/Globals';
 import { push } from '@zos/router'
 import { getText } from '@zos/i18n'
-import { HOUR_MS, styleColors } from '../utils/Constants';
+import { HOUR_MS, MONTH_SHORT, styleColors, WEEK_DAYS_SHORT } from '../utils/Constants';
 import {log} from '@zos/utils'
 import { Event } from '../utils/models/Event';
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { EventService } from '../utils/services/EventService';
 import { PageIndicator } from '../common/widgets/PageIndicator'
 import { PageTitle } from '../common/widgets/PageTitle'
+import {BackBtn} from '../common/widgets/backBtn'
+import { DeleteDialog } from '../common/widgets/DeleteDialog';
 
 
 const logger = log.getLogger('page/list.js')
 
 Page({
+  widgets: {
+    title: null,
+    date: null,
+    backBtn: null,
+    scrolEventsList: null,
+    pageIndicator: null,
+  },
+  data: {
+    date: null,
+    listOfEvents: null,
+  },
 
   registerGes(){
     onGesture({
         callback: (event) => {
-          if (event === GESTURE_RIGHT) {
-            push({
-              url: 'page/calendar',
-            })
-          }
+          if (event === GESTURE_RIGHT) {}
           return true
         },
       })
   },
 
   initTitle(date){
-    PageTitle.renderTitle('List of events')
+    this.widgets.title = PageTitle.renderTitle('List of events')
+    const dateText = '🗓️ ' + 
+                    date.getDate() + ' ' +
+                    getText(MONTH_SHORT[date.getMonth()]) + ' ' +
+                    getText(WEEK_DAYS_SHORT[date.getDay()])
+    this.widgets.date = createWidget(widget.TEXT, {
+      text: dateText,
+      w: 480,
+      x: 0,
+      y: 20,
+      text_size: 25,
+      align_h: align.CENTER_H,
+    })
+    
   },
 
-  addKeys(arrEv) {
+  addKeys(listOfEvents) {
       let result = [];
-      const previous = {
-          previous: 'previous.png'
-      };
-      result.push(previous);
-      for (const event of arrEv) {
+      result.push({previous: 'previous.png'});
+      for (const event of listOfEvents) {
           const eventCopy = { ...event };
           eventCopy.date_period = '🗓️ ' + eventCopy.date_period;
           eventCopy.period = '🕑 ' + eventCopy.period + ' ' + new Event(eventCopy).getDuration();
@@ -48,7 +66,7 @@ Page({
           eventCopy.edit_img = 'edit.png';
           switch (eventCopy.check_repeat) {
               case 'never':
-                  eventCopy.check_repeat = '';
+                  eventCopy.check_repeat = '🔄 ' + getText('Once');;
                   break;
               case 'day':
                   eventCopy.check_repeat = '🔄 ' + getText('Every day');
@@ -62,10 +80,7 @@ Page({
           }
           result.push(eventCopy);
       }
-      const next = {
-          next: 'next.png'
-      };
-      result.push(next);
+      result.push({ next: 'next.png'});
       
       return result;
   },
@@ -77,16 +92,22 @@ Page({
       y: 220,
       w: 480,
       h: 50,
+      radius: 200,
+      start_angle: 0,
+      end_angle_: 90,
       text_size: 35,
       align_h: align.CENTER_H,
       align_v: align.CENTER_V,
-      color: styleColors.white
+      color: styleColors.dark_gray
     })
   },
 
-  /**
-   * @param params { Date object}
-   */
+  renderBackBtn(){
+    this.widgets.backBtn = BackBtn.renderBackBtn('Back', 'page/calendar')
+    const onClick = () => { push({ url:'page/calendar', params: date})}
+    this.widgets.backBtn.click_func = onClick
+  },
+
   onInit(params) {
     this.registerGes()
     let date = null
@@ -95,21 +116,28 @@ Page({
     } catch {
       date = new Date()
     }
-    const listOfEvents = eventServise.getListOfEvents(date)
-    const pageIndicator = new PageIndicator(listOfEvents.length + 2)
     this.initTitle(date);
-    const separatedByColorInd = EventService.separateListToPastCurrentFutureEvents(listOfEvents)
-    const weekEvents = this.addKeys(listOfEvents)
-    logger.log('Init list of events: ' + JSON.stringify(weekEvents))
-    if (weekEvents.length == 2) 
-        this.ifEmptyListOfEventsLabel()
-  
     logger.log('Creating scrollist of events...')
-    const scrollList = createWidget(widget.SCROLL_LIST, {
+    const listOfEvents = eventServise.getListOfEvents(date)
+    const separatedByColorInd = EventService.separateListToPastCurrentFutureEvents(listOfEvents)
+    const dayEvents = this.addKeys(listOfEvents)
+    this.widgets.pageIndicator = new PageIndicator(dayEvents.length)
+    if (dayEvents.length == 2) this.ifEmptyListOfEventsLabel()
+    const itemOfEvent = [
+      { x: 0, y: 10, w: 380, h: 40, key: 'period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+      { x: 0, y: 50, w: 380, h: 80, key: 'description', color: styleColors.white_smoke, text_size: 40, align_h: align.CENTER_H},
+      { x: 0, y: 130, w: 380, h: 40, key: 'status', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
+      { x: 0, y: 190, w: 380, h: 40, key: 'check_repeat', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H}
+    ]
+    const actionEventBtns = [
+        { x:410, y: 20, w: 64, h: 64, key: 'del_img', action: true },
+        { x:410, y: 150, w: 64, h: 64, key: 'edit_img', action: true }
+    ]
+    this.widgets.scrolEventsList = createWidget(widget.SCROLL_LIST, {
         x: (480-380)/2,
-        y: 140,
-        h: 450,
-        w: 380,
+        y: 110,
+        h: 270,
+        w: 370,
         radius:10,
         item_space: 10,
         snap_to_center: true,
@@ -120,7 +148,7 @@ Page({
             type_id: 0,
             item_bg_color: styleColors.brown,
             item_bg_radius: 75,
-            image_view: [{ x: (380-50)/2, y: -70, w: 60, h: 60, key: 'previous', action: true }],
+            image_view: [{ x: (380-50)/2, y: -75, w: 60, h: 60, key: 'previous', action: true }],
             image_view_count: 1,
             item_height: 0
           },
@@ -128,117 +156,66 @@ Page({
             type_id: 1,
             item_bg_color: styleColors.dark_gray,
             item_bg_radius: 10,
-            text_view: [
-              { x: 0, y: 0, w: 380, h: 40, key: 'date_period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 50, w: 380, h: 40, key: 'period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 80, w: 380, h: 80, key: 'description', color: styleColors.white_smoke, text_size: 40, align_h: align.CENTER_H},
-              { x: 0, y: 150, w: 380, h: 40, key: 'weekDay', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 200, w: 380, h: 40, key: 'status', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 250, w: 380, h: 40, key: 'check_repeat', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-            ],
-            text_view_count: 6,
-            image_view: [
-              { x:410, y: 20, w: 64, h: 64, key: 'del_img', action: true },
-              { x:410, y: 150, w: 64, h: 64, key: 'edit_img', action: true }
-            ],
+            text_view: itemOfEvent,
+            text_view_count: 4,
+            image_view: actionEventBtns,
             image_view_count: 2,
-            item_height: 300
+            item_height: 270
           },
           {
             type_id: 2,
             item_bg_color: styleColors.dark_green,
             item_bg_radius: 10,
-            text_view: [
-              { x: 0, y: 0, w: 380, h: 40, key: 'date_period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 50, w: 380, h: 40, key: 'period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 80, w: 380, h: 80, key: 'description', color: styleColors.white_smoke, text_size: 40, align_h: align.CENTER_H},
-              { x: 0, y: 150, w: 380, h: 40, key: 'weekDay', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 200, w: 380, h: 40, key: 'status', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 250, w: 380, h: 40, key: 'check_repeat', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-            ],
-            text_view_count: 6,
-            image_view: [
-              { x:410, y: 20, w: 64, h: 64, key: 'del_img', action: true },
-              { x:410, y: 150, w: 64, h: 64, key: 'edit_img', action: true }
-            ],
+            text_view: itemOfEvent,
+            text_view_count: 4,
+            image_view: actionEventBtns,
             image_view_count: 2,
-            item_height: 300
+            item_height: 270
           },
           {
             type_id: 3,
             item_bg_color: styleColors.dark_blue,
             item_bg_radius: 10,
-            text_view: [
-              { x: 0, y: 0, w: 380, h: 40, key: 'date_period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 50, w: 380, h: 40, key: 'period', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 80, w: 380, h: 80, key: 'description', color: styleColors.white_smoke, text_size: 40, align_h: align.CENTER_H},
-              { x: 0, y: 150, w: 380, h: 40, key: 'weekDay', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 200, w: 380, h: 40, key: 'status', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-              { x: 0, y: 250, w: 380, h: 40, key: 'check_repeat', color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-            ],
-            text_view_count: 6,
-            image_view: [
-              { x:410, y: 20, w: 64, h: 64, key: 'del_img', action: true },
-              { x:410, y: 150, w: 64, h: 64, key: 'edit_img', action: true }
-            ],
+            text_view: itemOfEvent,
+            text_view_count: 4,
+            image_view: actionEventBtns,
             image_view_count: 2,
-            item_height: 300
+            item_height: 270
           },
           {
             type_id: 4,
             item_bg_color: styleColors.brown,
             item_bg_radius: 75,
-            image_view: [{ x: (380-50)/2, y: 10, w: 80, h: 80, key: 'next', action: true }],
+            image_view: [{ x: (380-50)/2, y: 15, w: 80, h: 80, key: 'next', action: true }],
             image_view_count: 1,
             item_height: 0
           },
         ],
         item_config_count: 5,
-        data_array: weekEvents,
-        data_count: weekEvents.length,
+        data_array: dayEvents,
+        data_count: dayEvents.length,
         item_focus_change_func: (list, index, focus) => {
-          pageIndicator.updatePageIndicator(index)
+          this.widgets.pageIndicator.updatePageIndicator(index)
         },
         item_click_func: (item, index, data_key) => {
-          if (data_key === 'del_img') {
-                const deleteDialog = createModal({
-                  content: getText('Delete this event') + '?',
-                  autoHide: false,
-                  show: false,
-                  onClick: (keyObj) => {
-                      const { type } = keyObj
-                      if (type === MODAL_CONFIRM) {
-                        eventServise.deleteEvent(weekEvents[index].id)
-                        scrollList.setProperty(prop.DELETE_ITEM, { index })
-                        logger.log('Delete event: ' + JSON.stringify(weekEvents[index]))
-                        deleteDialog.show(false)
-                      } else {
-                          logger.log('Delete canceled')
-                          deleteDialog.show(false)
-                      }
-                  },
-                })
-                deleteDialog.show(true) 
-          }
-          else if (data_key === 'next'){
-            const newDate = new Date(new Date(params).getTime() + 24 * HOUR_MS)
-            push({
-              url: 'page/list',
-              params: newDate
-            })
-          }
-          else if (data_key === 'previous'){
-            const newDate = new Date(new Date(params).getTime() - 24 * HOUR_MS)
-            push({
-              url: 'page/list',
-              params: newDate
-            })
+          if (data_key === 'del_img'){
+            new DeleteDialog(listOfEvents[index-1], date, 'page/calendar')
           }
           else if (data_key == 'edit_img'){
-            logger.log('Calling edit menu...')
             push({
               url: 'page/event/edit/menu',
               params: JSON.stringify(listOfEvents[index-1])
+            })
+          }
+          else {
+            let newDate = null;
+            if (data_key === 'next')
+              newDate = new Date(new Date(params).getTime() + 24 * HOUR_MS)
+            else if (data_key === 'previous')
+              newDate = new Date(new Date(params).getTime() - 24 * HOUR_MS)
+            push({
+              url: 'page/list',
+              params: newDate
             })
           }
         },
@@ -262,17 +239,18 @@ Page({
           },
           {
             start: separatedByColorInd.current == 0 ? 1 : separatedByColorInd.current+1,
-            end: weekEvents.length - 1,
+            end: dayEvents.length - 1,
             type_id: 3,
             visible: separatedByColorInd.future > 0
           },
           {
-            start: weekEvents.length-1,
-            end: weekEvents.length-1,
+            start: dayEvents.length-1,
+            end: dayEvents.length-1,
             type_id: 4
           }
         ],
         data_type_config_count: 5
     })
+    this.renderBackBtn() 
   }
 })

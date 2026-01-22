@@ -324,7 +324,6 @@ Page(
         this.renderEvents(eventServise.getActualEvents())
         this.iniitCentralBackground()
         this.initDigitalTime()
-        // CancelOkBtns.renderCancelOkBtns()
       }
     },
   })

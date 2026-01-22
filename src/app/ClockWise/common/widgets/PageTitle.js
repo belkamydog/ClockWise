@@ -13,7 +13,7 @@ export class PageTitle {
             text_size: 40,
             align_h: align.CENTER_H,
             align_v: align.CENTER_V,
-            color: styleColors.dodger_blue
+            color: styleColors.dodger_blue,
         })
     }
 }

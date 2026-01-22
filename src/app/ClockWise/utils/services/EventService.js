@@ -3,7 +3,6 @@ import { FileService } from './FileService'
 import { SettingsService } from './SettingsService'
 import { Event } from '../models/Event'
 import { HOUR_MS, REPEAT } from '../Constants'
-import { CommonUtils } from '../commonUtils'
 
 const logger = log.getLogger('EventService')
 
@@ -156,6 +155,30 @@ export class EventService {
                 if (this.#checkEventFields(ev) && ev.id !== id) {
                     result.push(ev);
                 }
+            }
+            this.#saveEvents(result);
+            this.#uploadActualEvents();
+            logger.log('Event deleted successfully');
+            return result
+        } catch (error) {
+            logger.error(error, `Failed to delete event with ID: ${id}`);
+            throw error;
+        }
+    }
+
+    deleteRepeatOfEvent(id, date) {
+        try {
+            logger.log(`Deleting event with ID: ${id} on ${date}`);
+            const loadedEvents = this.#loadEvents();
+            const result = [];
+            for (const ev of loadedEvents) {
+                if (this.#checkEventFields(ev) && ev.id === id && ev.repeat !== 'never') {
+                    const repeat_deny_list = []
+                    repeat_deny_list.push(date)
+                    ev.repeat_deny_list = repeat_deny_list
+                    result.push(ev);
+                }
+                else result.push(ev)
             }
             this.#saveEvents(result);
             this.#uploadActualEvents();
@@ -538,7 +561,9 @@ export class EventService {
             while (new Date(repeatedEvent.start).getTime() <= new Date(period.end).getTime()) {
                 if (new Date(repeatedEvent.start).getTime() <= new Date(period.end).getTime() &&
                     new Date(repeatedEvent.end).getTime() >= new Date(period.start).getTime()){
-                    listToAdd.push(new Event(repeatedEvent));
+                    if (!this.#checkRepeatDenyList(repeatedEvent)){
+                        listToAdd.push(new Event(repeatedEvent));
+                    }
                 }
                 repeatedEvent.start = start;
                 repeatedEvent.end = end;
@@ -549,6 +574,23 @@ export class EventService {
                 end += repeatMs
             }
         }
+    }
+
+    #checkRepeatDenyList(event){
+        if (event.repeat_deny_list){
+            const eventStartDate = new Date(event.start)
+            for (const date of event.repeat_deny_list) {
+                const denyDate = new Date(date)
+                if (denyDate.getDate() === eventStartDate.getDate() &&
+                    denyDate.getMonth() === eventStartDate.getMonth() &&
+                    denyDate.getFullYear() === eventStartDate.getFullYear())
+                {
+                    return true
+                }
+            }
+        }
+        else event.repeat_deny_list = []
+        return false
     }
 
     /**

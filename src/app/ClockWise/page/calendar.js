@@ -1,11 +1,35 @@
 import { getText } from '@zos/i18n'
 import { widget, createWidget, deleteWidget, align, event, prop} from '@zos/ui'
-import { MONTH_SHORT, styleColors, WEEK_DAYS_SHORT, WEEK_DAYS_SHORT_2 } from '../utils/Constants'
+import { MONTH_SHORT, styleColors, WEEK_DAYS_SHORT_2 } from '../utils/Constants'
 import { push } from '@zos/router'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { eventServise } from '../utils/Globals'
 import { PageIndicator } from '../common/widgets/PageIndicator'
 import { BackBtn } from '../common/widgets/backBtn'
+
+/**
+ * Module Description
+ * 
+ * This module represents the main calendar page with the following functionality:
+ * - Month navigation
+ * - Day rendering
+ * - Gesture support for navigation
+ * - Page indicator
+ * - Back button
+ * - Date handling
+ */
+
+/**
+ * Usage Notes:
+ * 
+ * The page expects date parameters on initialization. 
+ * If no valid date is provided, it defaults to the current date.
+ * 
+ * Navigation:
+ * - Swipe right to go back to main page
+ * - Click on a day to open event list
+ * - Use arrows to navigate between months
+ */
 
 Page({
     widgets: {
@@ -21,12 +45,13 @@ Page({
         days: [],
         backBtn: null,
     },
+
     data:{
         scrollIndex: -30,
-        month: 0,
-        year: new Date().getFullYear()
+        month: null,
+        year: null,
+        day: null
     },
-
 
     registerGes(){
         onGesture({
@@ -39,6 +64,25 @@ Page({
             return true
             },
         })
+    },
+
+    createViewConteiner(){
+        let position = this.data.day < 20 ? -145 : -350
+        this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
+            x: 0,
+            y: 150,
+            w: 480,
+            h: 220,
+            scroll_enable: 1,
+            pos_y: position,
+            page: 0,
+            scroll_frame_func: () => {
+                let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
+                let index = y / (520 / 2)
+                this.widgets.pageIndicator.updatePageIndicator(index)
+            }
+        });
+        this.widgets.pageIndicator.updatePageIndicator(Math.abs(position/(520/2)))
     },
 
     getMonthTitle(){
@@ -83,6 +127,8 @@ Page({
                 this.data.month = (--this.data.month % 12 + 12) % 12
                 this.widgets.month.data.setProperty(prop.TEXT, this.getMonthTitle())
                 this.renderDays(this.data.month, this.data.year)
+                this.widgets.viewContainer.pos_y = -350
+                this.widgets.pageIndicator.updatePageIndicator(1)
             }
         })
         this.widgets.month.next = createWidget(widget.BUTTON, {
@@ -103,6 +149,8 @@ Page({
                 this.data.month = (this.data.month % 12 + 12) % 12
                 this.widgets.month.data.setProperty(prop.TEXT, this.getMonthTitle())
                 this.renderDays(this.data.month, this.data.year)
+                this.widgets.viewContainer.pos_y = -145
+                this.widgets.pageIndicator.updatePageIndicator(0)
             }
         })        
     },
@@ -158,10 +206,9 @@ Page({
                 dayDate.getDate() === currentDate.day;
 
             if (isCurrentDay) {
-                console.log('isCurrent Day')
                 const currentDayBg = this.widgets.viewContainer.createWidget(widget.STROKE_RECT, {
-                    x: x-6,
-                    y: y-6,
+                    x: x-4,
+                    y: y,
                     w: 45,
                     h: 45,
                     radius: 5,
@@ -173,11 +220,11 @@ Page({
             color = workLoad[i - 1] > 0 ? styleColors.white_smoke : styleColors.dim_gray;
             const day = this.widgets.viewContainer.createWidget(widget.TEXT, {
                 text: i.toString(),
-                text_size: 25,
+                text_size: 30,
                 x,
                 y,
-                h: 30,
-                w: 30,
+                h: 40,
+                w: 40,
                 color
             });
             day.addEventListener(event.CLICK_DOWN, () => {
@@ -196,31 +243,48 @@ Page({
         }
     },
 
+    checkInitParams(pageInputParams){
+        let initDate = null
+        try {
+            initDate = new Date (pageInputParams)
+            if (isNaN(initDate)) {
+                throw new Error('Invalid date format');
+        }
+        } catch {
+            initDate = new Date()
+        }
+        this.data.month = initDate.getMonth()
+        this.data.year = initDate.getFullYear()
+        this.data.day = initDate.getDate()
+    },
+
     /**
-     * @param params Get current month events list
+     * Initialization method
+     * 
+     * @param {Object} params - Initialization parameters
+     * @param {string|Date|null} [params.date] - Optional date parameter for calendar initialization
+     *   - Can be a string in ISO format (e.g., '2026-01-20')
+     *   - Can be a Date object
+     *   - If not provided or invalid, defaults to current date
+     * @param {number} [params.month] - Optional month index (0-11)
+     * @param {number} [params.year] - Optional year value
+     * @param {number} [params.day] - Optional day of the month (1-31)
+     * 
+     * Example usage:
+     * - { date: '2026-01-20' }
+     * - { year: 2026, month: 0, day: 20 }
+     * - { date: new Date() }
+     * - {} (defaults to current date)
      */
-    build(params){
-        this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
-            x: 0,
-            y: 150,
-            w: 480,
-            h: 220,
-            scroll_enable: 1,
-            pos_y: -145,
-            page: 0,
-            scroll_frame_func: () => {
-                let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
-                console.log('pos y ' + y)
-                let index = y / (520 / 2)
-                this.widgets.pageIndicator.updatePageIndicator(index)
-            }
-        });
+    onInit(params){
+        this.checkInitParams(params)
         this.widgets.pageIndicator = new PageIndicator(2)
+        this.createViewConteiner()
         this.registerGes()
         this.renderMonth()
         this.renderWeekDays()
         const now = new Date()
-        this.renderDays(now.getMonth(), now.getFullYear())
+        this.renderDays(this.data.month, this.data.year)
         this.widgets.backBtn = BackBtn.renderBackBtn('Main page', 'page/index')
     }
 })

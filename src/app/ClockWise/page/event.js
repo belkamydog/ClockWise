@@ -1,13 +1,12 @@
 import { setScrollMode, SCROLL_MODE_SWIPER_HORIZONTAL } from '@zos/page'
-import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { createWidget, widget, align } from '@zos/ui'
 import { back, push } from '@zos/router'
 import { Event } from '../utils/models/Event'
-import { eventServise } from '../utils/Globals'
 import { styleColors } from '../utils/Constants'
 import { getText } from '@zos/i18n'
 import { px } from '@zos/utils'
+import { DeleteDialog } from '../common/widgets/DeleteDialog'
 
 
 Page ({
@@ -100,7 +99,7 @@ Page ({
             normal_src: 'delete.png',
             press_src: 'delete.png',
             click_func: (button_widget) => {
-                this.initDeleteDialog(current_event)
+                new DeleteDialog(current_event, new Date(), 'page/index')
             }
         })
         createWidget(widget.BUTTON, {
@@ -126,23 +125,6 @@ Page ({
             this.renderEventPage(new Event(element), x)
             x += 480
         });
-    },
-
-    initDeleteDialog(current_event){
-        createModal({
-            content: getText('Delete this event') + '?' ,
-            autoHide: true,
-            show: true,
-            onClick: (keyObj) => {
-                const { type } = keyObj
-                if (type === MODAL_CONFIRM) {
-                    eventServise.deleteEvent(current_event.id)
-                    push({
-                        url: 'page/index'
-                    })
-                }
-            },
-        })
     },
 
     onInit(params){
