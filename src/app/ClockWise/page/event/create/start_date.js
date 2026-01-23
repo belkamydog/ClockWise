@@ -40,7 +40,7 @@ Page({
                         currentValues.month = dataArrays.month[select_index]
                         break
                     case 2:
-                        currentValues.year = dataArrays.year[select_index]
+                        currentValues.year = select_index
                         break
                     case 3:
                         currentValues.hour = dataArrays.hour[select_index]
@@ -56,6 +56,7 @@ Page({
                 startDate.setDate(currentValues.day)
                 startDate.setHours(currentValues.hour)
                 startDate.setMinutes(currentValues.minute)
+                logger.error('START DAY ' + startDate)
                 const current_event = JSON.parse(params)
                 current_event.start = startDate
                 logger.log('Add start to event: ' + JSON.stringify(current_event))

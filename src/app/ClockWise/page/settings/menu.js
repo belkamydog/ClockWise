@@ -16,7 +16,7 @@ Page({
 
     initClearHistoryDialog(){
         const dialog = createModal({
-            content: getText('Clear history') + '?',
+            content: getText('Attention! This will delete all events') + '!',
             autoHide: false,
             show: false,
             onClick: (keyObj) => {
@@ -38,8 +38,8 @@ Page({
     build(){
         this.widgets.title = PageTitle.renderTitle('Settings')
         const menu = [
-            {src:'', text: getText('Auto delete')},
-            {src:'', text: getText('Clear history')},
+            {src:'', text: '📅 ' + getText('Auto delete')},
+            {src:'', text: '🗑️ ' + getText('Clear history')},
         ]
         const pageIndicator = new PageIndicator(menu.length)
         cycleList = createWidget(widget.CYCLE_IMAGE_TEXT_LIST, {

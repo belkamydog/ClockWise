@@ -183,7 +183,7 @@ export class Event {
         else {
             const {hours, minutes} = Event.calculateTimeDifference(now, this.end)
             result += getText('Left') + ': '
-            if (hours == 0) result += minutes + ' ' +getText('m')
+            if (hours == 0) result += minutes + ' ' + getText('m')
             else if (hours > 24) {
                 const daysCount =  Math.ceil(hours/24)
                 result += daysCount > 1? daysCount + ' ' + getText('days') : daysCount + ' ' + getText('day')

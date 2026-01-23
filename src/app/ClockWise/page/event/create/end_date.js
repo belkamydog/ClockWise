@@ -47,7 +47,7 @@ Page({
                         currentValues.day = dataArrays.day[select_index]
                         break
                     case 1:
-                        currentValues.month = dataArrays.month[select_index]
+                        currentValues.month = select_index
                         break
                     case 2:
                         currentValues.year = dataArrays.year[select_index]
@@ -71,6 +71,7 @@ Page({
                     this.attention(picker_widget)
                 }
                 else {
+                    logger.error('END DATE ' + endDate)
                     current_event.end = endDate.toISOString()
                     logger.log('Add end to event: ' + JSON.stringify(current_event))
                     push({

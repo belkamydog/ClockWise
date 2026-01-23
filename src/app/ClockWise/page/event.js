@@ -4,7 +4,6 @@ import { createWidget, widget, align } from '@zos/ui'
 import { back, push } from '@zos/router'
 import { Event } from '../utils/models/Event'
 import { styleColors } from '../utils/Constants'
-import { getText } from '@zos/i18n'
 import { px } from '@zos/utils'
 import { DeleteDialog } from '../common/widgets/DeleteDialog'
 
@@ -49,7 +48,7 @@ Page ({
             text_size: 38,
             text: current_event.getPeriod()
         }),
-         createWidget(widget.TEXT, {
+        createWidget(widget.TEXT, {
             x: index,
             y: 340,
             w: 480,

@@ -1,5 +1,5 @@
 import { push } from '@zos/router'
-import { widget, createWidget } from '@zos/ui'
+import { widget, createWidget, prop } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import {log} from '@zos/utils'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
@@ -51,7 +51,7 @@ Page({
                         currentValues.day = dataArrays.day[select_index]
                         break
                     case 1:
-                        currentValues.month = dataArrays.month[select_index]
+                        currentValues.month = select_index
                         break
                     case 2:
                         currentValues.year = dataArrays.year[select_index]
@@ -63,6 +63,16 @@ Page({
                         currentValues.minute = dataArrays.minute[select_index]
                         break                       
                 }
+                let startDate = new Date()
+                startDate.setFullYear(currentValues.year)
+                startDate.setMonth(currentValues.month)
+                startDate.setDate(currentValues.day)
+                startDate.setHours(currentValues.hour)
+                startDate.setMinutes(currentValues.minute)
+                if (new Date(needToEdit.end).getTime() < startDate.getTime()){
+                    picker.setProperty(prop.SUBTITLE, getText('Invalid date'))
+                }
+                else picker.setProperty(prop.SUBTITLE, '')
             } if (event_type == 2) {
                 let startDate = new Date()
                 startDate.setFullYear(currentValues.year)
@@ -71,11 +81,15 @@ Page({
                 startDate.setHours(currentValues.hour)
                 startDate.setMinutes(currentValues.minute)
                 needToEdit.start = startDate
-                eventServise.editEvent(needToEdit)
-                logger.log('Edit start date done, new start: ' +  needToEdit.start)
-                push({
-                    url: 'page/index',
-                })
+                if (new Date(needToEdit.end).getTime() < startDate.getTime()){
+                    picker.setProperty(prop.SUBTITLE, getText('Invalid date'))
+                } else {
+                    eventServise.editEvent(needToEdit)
+                    logger.log('Edit start date done, new start: ' +  needToEdit.start)
+                    push({
+                        url: 'page/index',
+                    })
+                }
             }
         }
 

@@ -1,7 +1,6 @@
 import { createWidget, widget, prop, align, event } from '@zos/ui'
-import { onGesture, GESTURE_LEFT, GESTURE_RIGHT} from '@zos/interaction'
+import { setScrollMode, SCROLL_MODE_SWIPER_HORIZONTAL } from '@zos/page'
 import { push, launchApp } from '@zos/router'
-import { exit } from '@zos/app-service'
 import { getText } from '@zos/i18n'
 import { Time } from '@zos/sensor'
 import {log} from '@zos/utils'
@@ -10,14 +9,16 @@ import { HOUR_MS, WEEK_DAYS_SHORT } from '../utils/Constants';
 import { Event } from '../utils/models/Event';
 import { styleColors } from '../utils/Constants'
 import { EventService } from '../utils/services/EventService'
-import { SettingsService } from '../utils/services/SettingsService'
 import { BasePage } from '@zeppos/zml/base-page'
+import { MainMenu } from './menu'
+
 
 const logger = log.getLogger('Main page')
 
 Page(
   BasePage({
     widgets:{
+      pageIndicator: null,
       canvas: null,
       background: null,
       hourArrow: null,
@@ -38,22 +39,10 @@ Page(
         _9: null,
         _10: null,
         _11: null,
+      },
+      menu:{
+        
       }
-    },
-    registerGes(){
-      onGesture({
-          callback: (event) => {
-            if (event === GESTURE_LEFT) {
-              push({
-                url: 'page/menu',
-              })
-            }
-            else if (event === GESTURE_RIGHT) {
-              exit()
-            }
-            return true
-          },
-        })
     },
 
     initBg(){
@@ -61,7 +50,7 @@ Page(
         center_x: 240,
         center_y: 240,
         radius: 240,
-        color: styleColors.white_smoke,
+        color: styleColors.dark_gray,
       })
       createWidget(widget.CIRCLE, {
         center_x: 240,
@@ -140,7 +129,7 @@ Page(
         center_x: 240,
         center_y: 240,
         radius: 111,
-        color: styleColors.white_smoke,
+        color: styleColors.dark_gray,
       })
       createWidget(widget.CIRCLE, {
         center_x: 240,
@@ -279,52 +268,36 @@ Page(
       }
     },
 
-    renderStudyMode(){
-        logger.log('Study mode page init')
-        const studyTitle = createWidget(widget.TEXT, {
-          text: getText('Welcome to ClockWise study mode') + '!',
-          text_size: 30,
-          w: 400,
-          x: (480-400)/2,
-          y: 100
-        }) 
-       const exitStudyBtn =  createWidget(widget.BUTTON, {
-          x: 40,
-          y: 350,
-          w: 400,
-          h: 60,
-          radius: 30,
-          normal_color: styleColors.dark_gray,
-          press_color: styleColors.blue_violet,
-          text: getText("Let's start"),
-          text_size: 24,
-          click_func: () => {
-            let settings = SettingsService.loadSettings()
-            settings.studyMode = false
-            SettingsService.saveSettings(settings)
-            push({ url: 'page/index' })
-          }
-        })
+    renderPageIndicator(){
+      this.widgets.pageIndicator = createWidget(widget.PAGE_INDICATOR, {
+          x: 5,
+          y: 15,
+          w: 480,
+          h: 10,
+          align_h: align.CENTER_H,
+          h_space: 10,
+          select_src: 'indicator/select.png',
+          unselect_src: 'indicator/unselect.png'
+      })
     },
 
-    onInit(params){
-      const settings = SettingsService.loadSettings()
-      if (settings.studyMode) {
-        push({
-          url: 'page/guides/welcome'
-        })
-      }
-      else{
-        this.renderStudyMode()
-        this.initBg()
-        this.registerGes()
-        this.initWfNumbers()
-        this.initArrows()
-        this.initCanvas()
-        this.renderEvents(eventServise.getActualEvents())
-        this.iniitCentralBackground()
-        this.initDigitalTime()
-      }
-    },
+    onInit(params){ 
+      setScrollMode({
+          mode: SCROLL_MODE_SWIPER_HORIZONTAL,
+          options: {
+              width: 500,
+              count: 2
+          }
+      })
+      this.initBg()
+      this.initWfNumbers()
+      this.initArrows()
+      this.initCanvas()
+      this.renderEvents(eventServise.getActualEvents())
+      this.iniitCentralBackground()
+      this.initDigitalTime()
+      this.renderPageIndicator()
+      const menu = new MainMenu()
+    }
   })
 )

@@ -52,7 +52,7 @@ Page({
                         currentValues.day = dataArrays.day[select_index]
                         break
                     case 1:
-                        currentValues.month = dataArrays.month[select_index]
+                        currentValues.month = select_index
                         break
                     case 2:
                         currentValues.year = dataArrays.year[select_index]
@@ -67,7 +67,7 @@ Page({
             } if (event_type == 2) {
                 let endDate = new Date()
                 endDate.setFullYear(currentValues.year)
-                endDate.setMonth(currentValues.month)
+                endDate.setMonth(currentValues.month-1)
                 endDate.setDate(currentValues.day)
                 endDate.setHours(currentValues.hour)
                 endDate.setMinutes(currentValues.minute)
@@ -100,7 +100,7 @@ Page({
                 },
                 {
                     data_array: dataArrays.month,
-                    init_val_index: currentValues.month,
+                    init_val_index: currentValues.month-1,
                     unit: 'M',
                     support_loop: true,
                     font_size: DATE_TIME_PEACKER.font_size,

@@ -108,16 +108,19 @@ Page({
     this.widgets.backBtn.click_func = onClick
   },
 
-  onInit(params) {
-    this.registerGes()
-    let date = null
+  getDateOfEvents(dateString){
     try{
-      date = new Date(params)
+      return new Date(dateString)
     } catch {
-      date = new Date()
+      return new Date()
     }
-    this.initTitle(date);
+  },
+
+  onInit(params) {
     logger.log('Creating scrollist of events...')
+    this.registerGes()
+    let date = this.getDateOfEvents(params)
+    this.initTitle(date);
     const listOfEvents = eventServise.getListOfEvents(date)
     const separatedByColorInd = EventService.separateListToPastCurrentFutureEvents(listOfEvents)
     const dayEvents = this.addKeys(listOfEvents)
@@ -198,15 +201,13 @@ Page({
           this.widgets.pageIndicator.updatePageIndicator(index)
         },
         item_click_func: (item, index, data_key) => {
-          if (data_key === 'del_img'){
+          if (data_key === 'del_img')
             new DeleteDialog(listOfEvents[index-1], date, 'page/calendar')
-          }
-          else if (data_key == 'edit_img'){
+          else if (data_key == 'edit_img')
             push({
               url: 'page/event/edit/menu',
               params: JSON.stringify(listOfEvents[index-1])
             })
-          }
           else {
             let newDate = null;
             if (data_key === 'next')
@@ -251,6 +252,6 @@ Page({
         ],
         data_type_config_count: 5
     })
-    this.renderBackBtn() 
+    this.renderBackBtn()
   }
 })

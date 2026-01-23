@@ -1,4 +1,6 @@
 
+
+
 msgid "Jan"
 msgstr "Янв"
 
@@ -67,6 +69,9 @@ msgstr "Календарь"
 
 msgid "After"
 msgstr "Через"
+
+msgid "Today"
+msgstr "Сегодня"
 
 msgid "Apply"
 msgstr "Применить"
@@ -209,6 +214,8 @@ msgstr "Воскресенье"
 msgid "Edit"
 msgstr "Изменить"
 
+msgid "Attention! This will delete all events"
+msgstr "Внимание! Это приведет к удалению всех событий"
 
 msgid "Create"
 msgstr "Создать"
