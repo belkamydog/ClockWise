@@ -57,9 +57,6 @@ Page({
         onGesture({
             callback: (event) => {
             if (event === GESTURE_RIGHT) {
-                push({
-                url: 'page/index',
-                })
             }
             return true
             },
@@ -230,8 +227,8 @@ Page({
             day.addEventListener(event.CLICK_DOWN, () => {
                 const date = new Date(year, month, i);
                 push({
-                    url: 'page/list',
-                    params: date
+                    url: 'page/list/day',
+                    params: {date: date, url: 'page/calendar'}
                 });
             });
             x += 52;

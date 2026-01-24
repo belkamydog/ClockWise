@@ -293,6 +293,7 @@ export class EventService {
         let result = 0;
         for (const event of eventsForDay) {
             result += this.#calculateEventDuration(event);
+            if (result > 0) break;
         }
         
         return result;
@@ -913,7 +914,7 @@ export class EventService {
         }
     }
 
-    static separateListToPastCurrentFutureEvents(eventsList){
+    separateListToPastCurrentFutureEvents(eventsList){
       let past = 0, current = 0, future = 0
       const now = new Date()
       for (const ev of eventsList){

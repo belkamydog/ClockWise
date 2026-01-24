@@ -7,12 +7,26 @@ import { eventServise } from '../../utils/Globals'
 import { PageIndicator } from '../../common/widgets/PageIndicator'
 import { BackBtn } from '../../common/widgets/backBtn'
 import { PageTitle } from '../../common/widgets/PageTitle'
+import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
+
 
 Page({
     widgets:{
         title: null,
         backBtn: null,
     },
+
+
+    registerGes(){
+        onGesture({
+            callback: (event) => {
+            if (event === GESTURE_RIGHT) {
+            }
+            return true
+            },
+        })
+    },
+
 
     initClearHistoryDialog(){
         const dialog = createModal({
@@ -35,7 +49,8 @@ Page({
         dialog.show(true) 
     },
 
-    build(){
+    onInit(){
+        this.registerGes()
         this.widgets.title = PageTitle.renderTitle('Settings')
         const menu = [
             {src:'', text: '📅 ' + getText('Auto delete')},

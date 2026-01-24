@@ -1,6 +1,3 @@
-
-
-
 msgid "Jan"
 msgstr "Янв"
 
@@ -76,6 +73,18 @@ msgstr "Сегодня"
 msgid "Apply"
 msgstr "Применить"
 
+msgid "Delete"
+msgstr "Удалить"
+
+msgid "Current event"
+msgstr "Текущее событие"
+
+msgid "All repeats"
+msgstr "Все повторы"
+
+msgid "Confirm"
+msgstr "Подтвердить"
+
 msgid "h"
 msgstr "ч"
 
@@ -103,9 +112,17 @@ msgstr "О программе"
 msgid "New event"
 msgstr "Новое событие"
 
+msgid "There are no events"
+msgstr "Нет событий"
+
+msgid "Create new event"
+msgstr "Новое событие"
+
 msgid "Back"
 msgstr "Назад"
 
+msgid "Invalid date"
+msgstr "Неверная дата"
 
 msgid "never"
 msgstr "никогда"

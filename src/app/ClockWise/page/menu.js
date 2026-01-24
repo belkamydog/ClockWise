@@ -63,8 +63,8 @@ export class MainMenu {
                     this.#initNewEventDialog()
                 } else if (index == 1){
                     push({
-                        url: 'page/list',
-                        params: new Date()
+                        url: 'page/list/day',
+                        params: {date: new Date(), url: 'page/index'}
                     }) 
                 } else if (index == 2){
                     push({

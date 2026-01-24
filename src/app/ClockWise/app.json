@@ -28,7 +28,7 @@
             "page/index",
             "page/refresh",
             "page/event",
-            "page/list",
+            "page/list/day",
             "page/calendar",
             "page/about",
             "page/settings/menu",

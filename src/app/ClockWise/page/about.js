@@ -1,5 +1,6 @@
 import { createWidget, widget, align } from '@zos/ui'
 import { getText } from '@zos/i18n'
+import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { styleColors } from '../utils/Constants'
 import { BackBtn } from '../common/widgets/backBtn'
 import { PageTitle } from '../common/widgets/PageTitle'
@@ -9,7 +10,21 @@ Page({
       title: null,
       backBtn: null,
     },
-    build() {
+
+
+    registerGes(){
+        onGesture({
+            callback: (event) => {
+            if (event === GESTURE_RIGHT) {
+            }
+            return true
+            },
+        })
+    },
+
+
+    onInit() {
+      this.registerGes()
       this.widgets.title = PageTitle.renderTitle('About')
       createWidget(widget.TEXT, {
         text: getText('App name') + ': ClockWise',
