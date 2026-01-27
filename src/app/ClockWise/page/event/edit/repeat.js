@@ -1,14 +1,14 @@
 import { createWidget, widget, prop, align } from '@zos/ui'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { getText } from '@zos/i18n'
-import { styleColors } from '../../../utils/Constants';
+import { push } from '@zos/router'
+import { log, px } from '@zos/utils'
+import { PageIndicator } from '../../../common/widgets/PageIndicator';
+import { PageTitle } from '../../../common/widgets/PageTitle'
+import { BackBtn } from '../../../common/widgets/backBtn';
+import { SCREEN_SIZE, styleColors } from '../../../utils/Constants';
 import { eventServise } from '../../../utils/Globals';
 import { REPEAT } from '../../../utils/Constants';
-import { push } from '@zos/router'
-import {log} from '@zos/utils'
-import { PageIndicator } from '../../../common/widgets/pageIndicator';
-import { BackBtn } from '../../../common/widgets/backBtn';
-import { PageTitle } from '../../../common/widgets/PageTitle'
 
 let repeat_page_index = 0
 const logger = log.getLogger('page/event/edit/repeat.js')
@@ -25,11 +25,6 @@ Page({
         onGesture({
             callback: (event) => {
             if (event === GESTURE_RIGHT) {
-                logger.log('Repeat peacker canceled push to edit menu')
-                push({
-                    url: 'page/event/edit/menu',
-                    params: JSON.stringify(event)
-                })
             }
             return true
             },
@@ -42,24 +37,24 @@ Page({
         this.widgets.title = PageTitle.renderTitle('Repeat:')
         this.widgets.pageIndicator = new PageIndicator(this.repeat.length)
         this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
-            x: 0,
-            y: 120,
-            w: 480,
-            h: 270,
+            x: px(0),
+            y: px(120),
+            w: px(SCREEN_SIZE),
+            h: px(270),
             scroll_enable: 1,
-            pos_y: -120,
+            pos_y: px(-120),
             page: 0,
             scroll_frame_func: () => {
                 let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
-                let index = y / (320 / this.repeat.length)
+                let index = y / (px(320) / this.repeat.length)
                 this.widgets.pageIndicator.updatePageIndicator(index)
             }
         })
         const radioGroup = this.widgets.viewContainer.createWidget(widget.RADIO_GROUP, {
-            x: 0,
-            y: 0,
-            w: 480,
-            h: 480,
+            x: px(0),
+            y: px(0),
+            w: px(SCREEN_SIZE),
+            h: px(SCREEN_SIZE),
             select_src: 'radio_selected.png',
             unselect_src: 'radio_unselected.png',
             check_func: (group, index, checked) => {
@@ -70,72 +65,72 @@ Page({
         })
         const x = 380
         const neverRepeatBtn = radioGroup.createWidget(widget.STATE_BUTTON, {
-            x: x,
-            y: 150,
-            w: 64,
-            h: 64
+            x: px(x),
+            y: px(150),
+            w: px(64),
+            h: px(64)
         })
         const everyDayRepeatBtn= radioGroup.createWidget(widget.STATE_BUTTON, {
-            x: x,
-            y: 250,
-            w: 64,
-            h: 64
+            x: px(x),
+            y: px(250),
+            w: px(64),
+            h: px(64)
         })
         const everyWeekRepeatBtn = radioGroup.createWidget(widget.STATE_BUTTON, {
-            x: x,
-            y: 350,
-            w: 64,
-            h: 64
+            x: px(x),
+            y: px(350),
+            w: px(64),
+            h: px(64)
         })
         const everyMonthRepeatBtn = radioGroup.createWidget(widget.STATE_BUTTON, {
-            x: x,
-            y: 450,
-            w: 64,
-            h: 64
+            x: px(x),
+            y: px(450),
+            w: px(64),
+            h: px(64)
         })
 
         const neverRepeatLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.repeat[0]),
-            w: 250,
-            h: 135,
-            x: 70,     
-            y: 140,
+            w: px(250),
+            h: px(135),
+            x: px(70),     
+            y: px(140),
             align_v: align.UP,
             align_h: align.LEFT,
-            text_size: 32,
+            text_size: px(32),
             color: styleColors.white_smoke
         })
         const everyDayRepeatLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.repeat[1]),
-            w: 250,
-            h: 64,
-            x: 70,
-            y: 240,
+            w: px(250),
+            h: px(64),
+            x: px(70),
+            y: px(240),
             align_v: align.CENTER_V,
             align_h: align.LEFT,
-            text_size: 32,
+            text_size: px(32),
             color: styleColors.white_smoke
         })
         const everyWeekRepeatLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.repeat[2]),
-            w: 250,
-            h: 64,
-            x: 70,
-            y: 340,
+            w: px(250),
+            h: px(64),
+            x: px(70),
+            y: px(340),
             align_v: align.CENTER_V,
             align_h: align.LEFT,
-            text_size: 32,
+            text_size: px(32),
             color: styleColors.white_smoke
         })
         const everyMonthRepeatLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.repeat[3]),
-            w: 250,
-            h: 64,
-            x: 70,
-            y: 440,
+            w: px(250),
+            h: px(64),
+            x: px(70),
+            y: px(440),
             align_v: align.CENTER_V,
             align_h: align.LEFT,
-            text_size: 32,
+            text_size: px(32),
             color: styleColors.white_smoke
         })
         const repeatIndex = REPEAT.indexOf(JSON.parse(params).check_repeat)
@@ -147,6 +142,7 @@ Page({
         const click_func = () => {
             let result = JSON.parse(params)
             result.repeat = REPEAT[repeat_page_index]
+            result.check_repeat = REPEAT[repeat_page_index]
             logger.log('Edit repeate done new repeat: ' + result.repeat)
             eventServise.editEvent(result)
             push({

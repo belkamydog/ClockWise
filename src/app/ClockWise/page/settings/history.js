@@ -1,12 +1,14 @@
+import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM} from '@zos/interaction'
 import { createWidget, widget, align, prop } from '@zos/ui'
-import { back } from '@zos/router'
 import { getText } from '@zos/i18n'
-import { AUTO_DELETE, styleColors } from '../../utils/Constants'
-import { createModal, MODAL_CONFIRM } from '@zos/interaction'
+import { back } from '@zos/router'
+import { px } from '@zos/utils'
+import { AUTO_DELETE, SCREEN_SIZE, styleColors } from '../../utils/Constants'
 import { SettingsService } from '../../utils/services/SettingsService'
 import { PageIndicator } from '../../common/widgets/PageIndicator'
 import { PageTitle } from '../../common/widgets/PageTitle'
 import { BackBtn } from '../../common/widgets/backBtn'
+
 
 
 
@@ -19,6 +21,16 @@ Page({
         title: null,
         apply: null,
         backBtn: null,
+    },
+
+    registerGes(){
+        onGesture({
+            callback: (event) => {
+            if (event === GESTURE_RIGHT) {
+            }
+            return true
+            },
+        })
     },
     attentionDialog(){
         const attention = getText('Attention! Some events can be deleted!') 
@@ -44,10 +56,10 @@ Page({
 
     initDeleteRadioGroup(){
         const radioGroup = this.widgets.viewContainer.createWidget(widget.RADIO_GROUP, {
-            x: 0,
-            y: 0,
-            w: 480,
-            h: 480,
+            x: px(0),
+            y: px(0),
+            w: px(480),
+            h: px(480),
             select_src: 'radio_selected.png',
             unselect_src: 'radio_unselected.png',
             check_func: (group, index, checked) => {
@@ -58,73 +70,73 @@ Page({
         })
         const x = 380
         const neverDelete = radioGroup.createWidget(widget.STATE_BUTTON, {
-            x: x,
-            y: 150,
-            w: 64,
-            h: 64
+            x: px(x),
+            y: px(150),
+            w: px(64),
+            h: px(64)
         })
         const dayDelete = radioGroup.createWidget(widget.STATE_BUTTON, {
-            x: x,
-            y: 250,
-            w: 64,
-            h: 64
+            x: px(x),
+            y: px(250),
+            w: px(64),
+            h: px(64)
         })
         const weekDelete = radioGroup.createWidget(widget.STATE_BUTTON, {
-            x: x,
-            y: 350,
-            w: 64,
-            h: 64
+            x: px(x),
+            y: px(350),
+            w: px(64),
+            h: px(64)
         })
         const monthDelete = radioGroup.createWidget(widget.STATE_BUTTON, {
-            x: x,
-            y: 450,
-            w: 64,
-            h: 64
+            x: px(x),
+            y: px(450),
+            w: px(64),
+            h: px(64)
         })
 
 
         const neverDeleteLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.actions[0]),
-            w: 250,
-            h: 135,
-            x: 70,     
-            y: 140,
+            w: px(250),
+            h: px(135),
+            x: px(70),     
+            y: px(140),
             align_v: align.UP,
             align_h: align.LEFT,
-            text_size: 32,
+            text_size: px(32),
             color: styleColors.white_smoke
         })
         const dayDeleteLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.actions[1]),
-            w: 250,
-            h: 64,
-            x: 70,
-            y: 240,
+            w: px(250),
+            h: px(64),
+            x: px(70),
+            y: px(240),
             align_v: align.CENTER_V,
             align_h: align.LEFT,
-            text_size: 32,
+            text_size: px(32),
             color: styleColors.white_smoke
         })
         const weekDeleteLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.actions[2]),
-            w: 250,
-            h: 64,
-            x: 70,
-            y: 340,
+            w: px(250),
+            h: px(64),
+            x: px(70),
+            y: px(340),
             align_v: align.CENTER_V,
             align_h: align.LEFT,
-            text_size: 32,
+            text_size: px(32),
             color: styleColors.white_smoke
         })
         const monthDeleteLabel = this.widgets.viewContainer.createWidget(widget.TEXT, {
             text: getText(this.actions[3]),
-            w: 250,
-            h: 64,
-            x: 70,
-            y: 440,
+            w: px(250),
+            h: px(64),
+            x: px(70),
+            y: px(440),
             align_v: align.CENTER_V,
             align_h: align.LEFT,
-            text_size: 32,
+            text_size: px(32),
             color: styleColors.white_smoke
         })
 
@@ -138,16 +150,17 @@ Page({
             radioGroup.setProperty(prop.INIT, monthDelete)
     },
     
-    build(){
+    onInit(){
+        this.registerGes()
         this.widgets.title = PageTitle.renderTitle('Delete events:')
         this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
-            x: 0,
-            y: 100,
-            w: 480,
-            h: 280,
+            x: px(0),
+            y: px(100),
+            w: px(SCREEN_SIZE),
+            h: px(280),
             scroll_enable: 1,
             page: 0,
-            pos_y: -120,
+            pos_y: px(-120),
             scroll_frame_func: () => {
                 let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
                 let index = y / (300 / 4)

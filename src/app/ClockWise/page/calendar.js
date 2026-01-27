@@ -1,11 +1,12 @@
-import { getText } from '@zos/i18n'
 import { widget, createWidget, deleteWidget, align, event, prop} from '@zos/ui'
-import { MONTH_SHORT, styleColors, WEEK_DAYS_SHORT_2 } from '../utils/Constants'
-import { push } from '@zos/router'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
-import { eventServise } from '../utils/Globals'
+import { getText } from '@zos/i18n'
+import { push } from '@zos/router'
+import { px } from '@zos/utils'
+import { MONTH_SHORT, SCREEN_SIZE, styleColors, WEEK_DAYS_SHORT_2 } from '../utils/Constants'
 import { PageIndicator } from '../common/widgets/PageIndicator'
 import { BackBtn } from '../common/widgets/backBtn'
+import { eventServise } from '../utils/Globals'
 
 /**
  * Module Description
@@ -66,20 +67,20 @@ Page({
     createViewConteiner(){
         let position = this.data.day < 20 ? -145 : -350
         this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
-            x: 0,
-            y: 150,
-            w: 480,
-            h: 220,
+            x: px(0),
+            y: px(150),
+            w: px(SCREEN_SIZE),
+            h: px(220),
             scroll_enable: 1,
-            pos_y: position,
+            pos_y: px(position),
             page: 0,
             scroll_frame_func: () => {
                 let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
-                let index = y / (520 / 2)
+                let index = y / (px(520) / 2)
                 this.widgets.pageIndicator.updatePageIndicator(index)
             }
         });
-        this.widgets.pageIndicator.updatePageIndicator(Math.abs(position/(520/2)))
+        this.widgets.pageIndicator.updatePageIndicator(Math.abs(position/(px(520)/2)))
     },
 
     getMonthTitle(){
@@ -88,34 +89,34 @@ Page({
 
     renderMonth(){
         this.widgets.month.border = createWidget(widget.STROKE_RECT, {
-            x: (480-250)/2,
-            y: 35,
-            w: 250,
-            h: 70,
-            radius: 20,
-            line_width: 1,
+            x: px((SCREEN_SIZE-250)/2),
+            y: px(35),
+            w: px(250),
+            h: px(70),
+            radius: px(20),
+            line_width: px(1),
             color: styleColors.white_smoke
         })
         this.widgets.month.data = createWidget(widget.TEXT, {
-            x: (480-250)/2,
-            y: 35,
-            w: 250,
-            h: 70,
+            x: px((SCREEN_SIZE-250)/2),
+            y: px(35),
+            w: px(250),
+            h: px(70),
             align_h: align.CENTER_H,
             align_v: align.CENTER_V,
-            text_size: 30,
+            text_size: px(30),
             text: this.getMonthTitle(),
             color: styleColors.white_smoke
         })
         this.widgets.month.prev = createWidget(widget.BUTTON, {
-            x: (480 - 40) / 2 - 100,
-            y: 38,
-            w: 40,
-            h: 60,
-            radius: 12,
+            x: px((SCREEN_SIZE - 40) / 2 - 100),
+            y: px(38),
+            w: px(40),
+            h: px(60),
+            radius: px(12),
             color: styleColors.white_smoke,
             text: '<',
-            text_size: 30,
+            text_size: px(30),
             click_func: () => {
                 if (this.data.month == 0) {
                     if (this.data.year >= new Date().getFullYear()-3)
@@ -129,14 +130,14 @@ Page({
             }
         })
         this.widgets.month.next = createWidget(widget.BUTTON, {
-            x: (480 - 40) / 2 + 100,
-            y: 38,
-            w: 40,
-            h: 60,
-            radius: 12,
+            x: px((SCREEN_SIZE - 40) / 2 + 100),
+            y: px(38),
+            w: px(40),
+            h: px(60),
+            radius: px(12),
             color: styleColors.white_smoke,
             text: '>',
-            text_size: 30,
+            text_size: px(30),
             click_func: () => {
                 if (this.data.month == 11) {
                     if (this.data.year >= new Date().getFullYear()-3)
@@ -157,11 +158,11 @@ Page({
         WEEK_DAYS_SHORT_2.forEach(element => {
             const wd = createWidget(widget.TEXT, {
                 text: getText(element),
-                text_size: 25,
-                x: x,
-                y: 110,
-                h: 30,
-                w: 35,
+                text_size: px(25),
+                x: px(x),
+                y: px(110),
+                h: px(30),
+                w: px(35),
                 color: styleColors.dark_gray
             })
             x += 52
@@ -171,8 +172,9 @@ Page({
     },
 
     renderDays(month, year) {
-        for (const i of this.widgets.days) deleteWidget(i)
+        const copyDays = [...this.widgets.days]
         this.widgets.days = [];
+        for (const i of this.widgets.days) deleteWidget(i)
         const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
         const startWeekDay = new Date(year, month, 1).getDay()
         let x = startWeekDay == 0 ? 380 : startWeekDay * 52 + 20;
@@ -185,12 +187,12 @@ Page({
             day: now.getDate()
         };
         const currentDayBg = createWidget(widget, FILL_RECT, {
-            x: x,
-            y: y,
-            w: 400,
-            h: 400,
-            radius: 20,
-            line_width: 4,
+            x: px(x),
+            y: px(y),
+            w: px(400),
+            h: px(400),
+            radius: px(20),
+            line_width: px(4),
             color: styleColors.green
         });
         for (let i = 1; i <= daysInMonth(year, month); i++) {
@@ -204,12 +206,12 @@ Page({
 
             if (isCurrentDay) {
                 const currentDayBg = this.widgets.viewContainer.createWidget(widget.STROKE_RECT, {
-                    x: x-4,
-                    y: y,
-                    w: 45,
-                    h: 45,
-                    radius: 5,
-                    line_width: 2,
+                    x: px(x-4),
+                    y: px(y),
+                    w: px(45),
+                    h: px(45),
+                    radius: px(5),
+                    line_width: px(2),
                     color: styleColors.white_smoke
                 })
                 this.widgets.days.push(currentDayBg);
@@ -217,12 +219,12 @@ Page({
             color = workLoad[i - 1] > 0 ? styleColors.white_smoke : styleColors.dim_gray;
             const day = this.widgets.viewContainer.createWidget(widget.TEXT, {
                 text: i.toString(),
-                text_size: 30,
-                x,
-                y,
-                h: 40,
-                w: 40,
-                color
+                text_size: px(30),
+                x: px(x),
+                y: px(y),
+                h: px(40),
+                w: px(40),
+                color: color
             });
             day.addEventListener(event.CLICK_DOWN, () => {
                 const date = new Date(year, month, i);

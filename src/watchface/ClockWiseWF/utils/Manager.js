@@ -1,4 +1,4 @@
-import { readSync, openSync, O_RDONLY, closeSync} from '@zos/fs'
+import { readSync, openSync,statSync,  O_RDONLY, closeSync} from '@zos/fs'
 import { getText } from '@zos/i18n'
 
 export class Manager{
@@ -26,7 +26,6 @@ export class Manager{
             status: '➕' 
         };
     }
-
     static #decodeBuffer(buffer) {
         const uint8Array = new Uint8Array(buffer);
         let str = '';
@@ -73,7 +72,53 @@ export class Manager{
         
         return str;
     }
-
+    static getFileSize(){
+        try {
+            const fd = openSync({
+                path: 'actual_events',
+                flag: O_RDONLY,
+                options:{
+                    appId: 1099579,
+                }
+            });
+            
+            if (fd < 0) {
+                console.log('Failed to open file');
+                return 0;
+            }
+            
+            // Пробуем прочитать максимальное количество данных
+            const testBuffer = new ArrayBuffer(4096);
+            let totalRead = 0;
+            
+            while (true) {
+                const bytesRead = readSync({
+                    fd,
+                    buffer: testBuffer,
+                    length: 4096,
+                    position: totalRead
+                });
+                
+                if (bytesRead <= 0) {
+                    break;
+                }
+                
+                totalRead += bytesRead;
+                
+                // Если прочитали меньше 4096, значит достигли конца файла
+                if (bytesRead < 4096) {
+                    break;
+                }
+            }
+            
+            closeSync({ fd });
+            return totalRead;
+            
+        } catch (error) {
+            console.error('Error in getFileSize:', error);
+            return 0;
+        }
+    }
     static uploadActualEvents(){
         const fd = openSync({
             path: 'actual_events',
@@ -82,15 +127,21 @@ export class Manager{
             appId: 1099579,
             }
         })
+        const result = statSync({
+                path: 'actual_events',
+                options: {
+                    appId: 1099579
+                }
+        });
+        console.log('FILE SIZE: ' + this.getFileSize())
         if (fd >= 0){
-            const buffer = new ArrayBuffer(500)
+            const buffer = new ArrayBuffer(this.getFileSize()+1)
             readSync({
                 fd,
                 buffer,
             })
             closeSync({ fd })
             let text = this.#decodeBuffer(buffer)
-            const t = JSON.parse(text)      
             try {
                 return  JSON.parse(text)
             } catch (error) {

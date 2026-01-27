@@ -1,4 +1,5 @@
 import { createWidget, widget, prop } from '@zos/ui'
+import { px } from '@zos/utils'
 import { styleColors } from '../../utils/Constants'
 
 export class PageIndicator {
@@ -11,24 +12,24 @@ export class PageIndicator {
         const deltaAngles = 60 / pageLength
         const startAngle = -30
         this.background = createWidget(widget.ARC, {
-            x: -10,
-            y: 0,
-            w: 480,
-            h: 480,
+            x: px(-10),
+            y: px(0),
+            w: px(480),
+            h: px(480),
             start_angle: -30,
             end_angle: 30,
             color: styleColors.dim_gray,
-            line_width: 10
+            line_width: px(10)
         })
         this.indicator = createWidget(widget.ARC, {
-            x: -10,
-            y: 0,
-            w: 480,
-            h: 480,
+            x: px(-10),
+            y: px(0),
+            w: px(480),
+            h: px(480),
             start_angle: startAngle,
             end_angle: startAngle + deltaAngles,
             color: styleColors.white_smoke,
-            line_width: 10
+            line_width: px(10)
         })
     }
 

@@ -1,15 +1,16 @@
-import {widget, createWidget, align} from '@zos/ui'
-import { push } from '@zos/router'
-import { getText } from '@zos/i18n'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
-import { eventServise } from '../../utils/Globals'
-import { styleColors } from '../../utils/Constants'
-import { DeleteDialog } from '../../common/widgets/DeleteDialog'
-import { Event } from '../../utils/models/Event'
+import {widget, createWidget, align} from '@zos/ui'
+import { getText } from '@zos/i18n'
+import { push } from '@zos/router'
+import { px } from '@zos/utils'
+import { MONTH_SHORT, SCREEN_SIZE, WEEK_DAYS_SHORT } from '../../utils/Constants'
 import { PageIndicator } from '../../common/widgets/PageIndicator'
+import { DeleteDialog } from '../../common/widgets/DeleteDialog'
 import { PageTitle } from '../../common/widgets/PageTitle'
-import { MONTH_SHORT, WEEK_DAYS_SHORT } from '../../utils/Constants'
 import { BackBtn } from '../../common/widgets/backBtn'
+import { styleColors } from '../../utils/Constants'
+import { eventServise } from '../../utils/Globals'
+import { Event } from '../../utils/models/Event'
 
 
 KEYS = { 
@@ -60,17 +61,17 @@ Page ({
 
     getItemOfEventConfig(){
         return [
-          { x: 0, y: 10, w: 380, h: 40, key: KEYS.period, color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-          { x: 0, y: 50, w: 380, h: 80, key: KEYS.description, color: styleColors.white_smoke, text_size: 40, align_h: align.CENTER_H},
-          { x: 0, y: 130, w: 380, h: 40, key: KEYS.status, color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H},
-          { x: 0, y: 190, w: 380, h: 40, key: KEYS.check_repeat, color: styleColors.white_smoke, text_size: 30, align_h: align.CENTER_H}
+          { x: px(0), y: px(10), w: px(380), h: px(40), key: KEYS.period, color: styleColors.white_smoke, text_size: px(30), align_h: align.CENTER_H},
+          { x: px(0), y: px(50), w: px(380), h: px(80), key: KEYS.description, color: styleColors.white_smoke, text_size: px(40), align_h: align.CENTER_H},
+          { x: px(0), y: px(130), w: px(380), h: px(40), key: KEYS.status, color: styleColors.white_smoke, text_size: px(30), align_h: align.CENTER_H},
+          { x: px(0), y: px(190), w: px(380), h: px(40), key: KEYS.check_repeat, color: styleColors.white_smoke, text_size: px(30), align_h: align.CENTER_H}
         ]
     },
 
     getActionsBtnsConfig(){
         return [
-            { x:410, y: 20, w: 64, h: 64, key: KEYS.del_img, action: true },
-            { x:410, y: 150, w: 64, h: 64, key: KEYS.edit_img, action: true }
+            { x: px(410), y: px(20), w: px(64), h: px(64), key: KEYS.del_img, action: true },
+            { x: px(410), y: px(150), w: px(64), h: px(64), key: KEYS.edit_img, action: true }
         ]
     },
 
@@ -82,10 +83,10 @@ Page ({
                             getText(WEEK_DAYS_SHORT[this.data.date.getDay()])
             this.widgets.date = createWidget(widget.TEXT, {
             text: dateText,
-            w: 480,
-            x: 0,
-            y: 20,
-            text_size: 25,
+            w: px(SCREEN_SIZE),
+            x: px(0),
+            y: px(20),
+            text_size: px(25),
             align_h: align.CENTER_H,
         })
     },
@@ -104,17 +105,17 @@ Page ({
     initList(){
         const itemConfig = this.initItemConfig()
         const preparedList = this.prepareEventsFieldsAndAddKeys()
-        const dataTypeConfig = this.initDataTypeConfig(preparedList.length)
+        const dataTypeConfig = this.initDataTypeConfig()
         this.widgets.list = createWidget(widget.SCROLL_LIST, {
-            x: (480-380)/2,
-            y: 110,
-            h: 270,
-            w: 370,
-            radius:10,
-            item_space: 10,
+            x: px((SCREEN_SIZE-380)/2),
+            y: px(110),
+            h: px(270),
+            w: px(370),
+            radius: px(10),
+            item_space: px(10),
             snap_to_center: true,
             item_enable_horizon_drag: true,
-            item_drag_max_distance: -120,
+            item_drag_max_distance: px(-120),
             item_config: itemConfig,
             item_config_count: itemConfig.length,
             data_array: preparedList,
@@ -122,6 +123,7 @@ Page ({
             data_type_config: dataTypeConfig,
             data_type_config_count: dataTypeConfig.length,
             item_focus_change_func: (list, index, focus) => {
+                console.log('List index is: ' + index)
                 this.widgets.pageIndicator.updatePageIndicator(index)
             },
             item_click_func: this.itemClick.bind(this)
@@ -192,58 +194,30 @@ Page ({
       return result;
     },
 
-    initDataTypeConfig(preparedArrayLength){
-        const separatedByColorInd = eventServise.separateListToPastCurrentFutureEvents(this.data.listOfEvents)
-        return [
-          {
-            start: 0,
-            end:  0,
-            type_id: 0,
-            visible: true
-          },
-          {
-            start: 1,
-            end: separatedByColorInd.past,
-            type_id: 1,
-            visible: separatedByColorInd.past > 0
-          },
-          {
-            start: separatedByColorInd.past == 0 ? 1 : separatedByColorInd.past+1,
-            end: separatedByColorInd.current,
-            type_id: 2,
-            visible: separatedByColorInd.current > separatedByColorInd.past
-          },
-          {
-            start: separatedByColorInd.current == 0 ? 1 : separatedByColorInd.current+1,
-            end: preparedArrayLength - 3,
-            type_id: 3,
-            visible: separatedByColorInd.future > 0
-          },
-          {
-            start: preparedArrayLength-2,
-            end: preparedArrayLength-2,
-            type_id: 4,
-            visible: true
-          },
-          {
-            start: preparedArrayLength - 1,
-            end: preparedArrayLength - 1,
-            type_id: 5,
-            visible: true
-          }
-        ]
+    initDataTypeConfig(){
+        const conf = []
+        let start = 0
+        let end = 0
+        let id = 0
+        conf.push({ start: start, end:  end, type_id: id, visible: true })
+        for (const i of this.data.listOfEvents){
+            conf.push({ start: ++start, end: ++end, type_id: ++id, visible: true })
+        }
+        conf.push({ start: ++start, end:  ++end, type_id: ++id, visible: true })
+        conf.push({ start: ++start, end:  ++end, type_id: ++id, visible: true })
+        return conf
     },
 
     initEventItem(typeId, color){
         return  {
             type_id: typeId,
             item_bg_color: color,
-            item_bg_radius: 10,
+            item_bg_radius: px(10),
             text_view: this.getItemOfEventConfig(),
             text_view_count: 4,
             image_view: this.getActionsBtnsConfig(),
             image_view_count: 2,
-            item_height: 270
+            item_height: px(270)
         }
     },
 
@@ -251,31 +225,32 @@ Page ({
         return  {
             type_id: typeId,
             item_bg_color: color,
-            item_bg_radius: 10,
-            text_view:  [{ x: 0, y: 0, w: 380, h: 100, key: KEYS.create, color: styleColors.white_smoke, action: true, text_size: 30, align_h: align.CENTER_H}],
+            item_bg_radius: px(10),
+            text_view:  [{ x: px(0), y: px(0), w: px(380), h: px(100), key: KEYS.create, color: styleColors.white_smoke, action: true, text_size: px(30), align_h: align.CENTER_H}],
             text_view_count: 1,
             image_view_count: 0,
-            item_height: 100
+            item_height: px(100)
         }
     },
 
     initNavigationBtn(typeId, key, yPos){
         return  {
             type_id: typeId,
-            image_view: [{ x: (400-70)/2, y: yPos, w: 70, h: 70, key: key, action: true }],
+            image_view: [{ x: px((400-70)/2), y: px(yPos), w: px(70), h: px(70), key: key, action: true }],
             image_view_count: 1,
-            item_height: 0
+            item_height: px(0)
         }
     },
 
     initItemConfig(){
-        return [
-            this.initNavigationBtn(0, KEYS.previous, -65),
-            this.initEventItem(1, styleColors.dark_gray),
-            this.initEventItem(2, styleColors.dark_green),
-            this.initEventItem(3, styleColors.dark_blue),
-            this.initCreateBtn(4, styleColors.dodger_blue),
-            this.initNavigationBtn(5, KEYS.next, 25),
-        ]
+        const conf  = []
+        let id = 0
+        conf.push(this.initNavigationBtn(id, KEYS.previous, -65))
+        for (const ev of this.data.listOfEvents){
+            conf.push(this.initEventItem(++id, ev.color))
+        }
+        conf.push(this.initCreateBtn(++id,styleColors.dodger_blue))
+        conf.push(this.initNavigationBtn(++id, KEYS.next, 25))
+        return conf
     }
 })

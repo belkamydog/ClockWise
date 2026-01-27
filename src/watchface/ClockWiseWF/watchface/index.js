@@ -1,11 +1,12 @@
 import {widget, createWidget, prop, align, deleteWidget, event} from '@zos/ui'
 import {Time, Battery, Step, Calorie, Distance, HeartRate, Weather} from '@zos/sensor'
-import { WEEK_DAYS_SHORT } from '../../../app/TimeManager/utils/Constants'
+import { WEEK_DAYS_SHORT } from '../utils/Constants'
 import { WatchFaceDigits } from '../utils/WatchFaceDigits'
 import { Manager } from '../utils/Manager'
-import { launchApp} from '@zos/router'
+import { launchApp, getAppIdByName } from '@zos/router'
 import {log} from '@zos/utils'
 import { getText } from '@zos/i18n'
+import { } from '@zos/router'
 
 
 function addZero(value){
@@ -333,9 +334,9 @@ WatchFace({
       text_size: 30,
       align_h: align.CENTER_H,
       color: 0xFFFFFF,
-      x: (480-100)/2,
+      x: (480-150)/2,
       y: 80,
-      w: 100,
+      w: 150,
     })
     this.state.eventState.description = createWidget(widget.TEXT, {
       text: '',
@@ -367,6 +368,7 @@ WatchFace({
       })
     }
     const listOfActuals = Manager.uploadActualEvents()
+    logger.error(JSON.stringify(listOfActuals))
     this.events.forEach((item) => {
       deleteWidget(item)
     })
@@ -379,7 +381,7 @@ WatchFace({
           h: 400,
           start_angle: item.startAngle-90,
           end_angle: item.endAngle-90,
-          line_width: 23,
+          line_width: 15,
           alpha: 100,
           color: item.color
         })
@@ -482,20 +484,18 @@ WatchFace({
   },
 
   onInit() {
-    try{
       logger.log('Wachface init')
-      this.renderEventSectors()
-      this.initAnalogBg()
-      this.initWfNumbers()
-      this.initPower()
-      this.initDateTime()
-      this.initActivity()
-      this.initWeather()
-      this.initEventState([])
-      this.refreshEventData()
-      this.updateWidgets()
-    } catch (error){
-      logger.error('Error ', error)
-    }
+      appId: 1099579
+      console.log('ID :' + getAppIdByName('ClockWi'))
+      // this.renderEventSectors()  
+      // this.initAnalogBg()
+      // this.initWfNumbers()
+      // this.initPower()
+      // this.initDateTime()
+      // this.initActivity()
+      // this.initWeather()
+      // this.initEventState([])
+      // this.refreshEventData()
+      // this.updateWidgets()
   }
 })

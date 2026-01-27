@@ -1,12 +1,13 @@
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { createWidget, widget, prop } from '@zos/ui'
 import { push } from '@zos/router'
-import {log} from '@zos/utils'
+import { log, px } from '@zos/utils'
+import { PageIndicator } from '../../../common/widgets/PageIndicator'
+import {PageTitle} from '../../../common/widgets/PageTitle'
+import { BackBtn } from '../../../common/widgets/backBtn'
 import { eventServise } from '../../../utils/Globals';
 import { COLORS } from '../../../utils/Constants'
-import {PageTitle} from '../../../common/widgets/PageTitle'
-import { PageIndicator } from '../../../common/widgets/pageIndicator'
-import { BackBtn } from '../../../common/widgets/backBtn'
+
 
 const logger = log.getLogger('page/event/edit/color.js')
 
@@ -22,11 +23,6 @@ Page({
         onGesture({
             callback: (event) => {
             if (event === GESTURE_RIGHT) {
-                logger.log('Edit color canceled push to edit menu')
-                push({
-                    url: 'page/event/edit/menu',
-                    params: JSON.stringify(event)
-                })
             }
             return true
             },
@@ -39,16 +35,16 @@ Page({
         this.widgets.title = PageTitle.renderTitle('Event color')
         this.widgets.pageIndicator = new PageIndicator(COLORS.length/4)
         this.widgets.viewContainer = createWidget(widget.VIEW_CONTAINER, {
-            x: 0,
-            y: 150,
-            w: 480,
-            h: 220,
+            x: px(0),
+            y: px(150),
+            w: px(480),
+            h: px(220),
             scroll_enable: 1,
-            pos_y: -80,
+            pos_y: px(-80),
             page: 0,
             scroll_frame_func: () => {
                 let y =  Math.abs(this.widgets.viewContainer.getProperty(prop.POS_Y))
-                let index = y / (400 / (COLORS.length/4))
+                let index = y / (px(400) / (COLORS.length/4))
                 this.widgets.pageIndicator.updatePageIndicator(index)
             }
         })
@@ -56,11 +52,11 @@ Page({
             for (let col = 0; col < 3; col++){
                 const currentColor = COLORS[color_i++]
                 const btn = this.widgets.viewContainer.createWidget(widget.BUTTON, {
-                    x: 80 + 100 * col + 20,
-                    y: 80 + 100 * row,
-                    w: 80,
-                    h: 80,
-                    radius: 0,
+                    x: px(80 + 100 * col + 20),
+                    y: px(80 + 100 * row),
+                    w: px(80),
+                    h: px(80),
+                    radius: px(0),
                     normal_color: currentColor,
                     press_color: 0xfeb4a8,
                     text: '',

@@ -1,15 +1,17 @@
-import { createWidget, widget, prop, align, event } from '@zos/ui'
 import { setScrollMode, SCROLL_MODE_SWIPER_HORIZONTAL } from '@zos/page'
-import { push, launchApp } from '@zos/router'
+import { createWidget, widget, prop, align, event } from '@zos/ui'
+import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
+import { push, launchApp, exit } from '@zos/router'
+import { BasePage } from '@zeppos/zml/base-page'
 import { getText } from '@zos/i18n'
 import { Time } from '@zos/sensor'
-import {log} from '@zos/utils'
+import {log, px } from '@zos/utils'
+
+import { HOUR_MS, SCREEN_SIZE, WEEK_DAYS_SHORT } from '../utils/Constants';
+import { EventService } from '../utils/services/EventService'
 import { eventServise, wfNumbers} from '../utils/Globals';
-import { HOUR_MS, WEEK_DAYS_SHORT } from '../utils/Constants';
 import { Event } from '../utils/models/Event';
 import { styleColors } from '../utils/Constants'
-import { EventService } from '../utils/services/EventService'
-import { BasePage } from '@zeppos/zml/base-page'
 import { MainMenu } from './menu'
 
 
@@ -17,8 +19,9 @@ const logger = log.getLogger('Main page')
 
 Page(
   BasePage({
-    widgets:{
+    widgets: {
       pageIndicator: null,
+      canvasColor: null,
       canvas: null,
       background: null,
       hourArrow: null,
@@ -26,7 +29,7 @@ Page(
       minuteArrow: null,
       digitTime: null,
       date: null,
-      wfNumbers:{
+      wfNumbers: {
         _0: null,
         _1: null,
         _2: null,
@@ -40,30 +43,37 @@ Page(
         _10: null,
         _11: null,
       },
-      menu:{
-        
-      }
     },
 
-    initBg(){
+    initColorCanvas() {
+      this.widgets.canvasColor = createWidget(widget.CANVAS, {
+        x: px(0),
+        y: px(0),
+        w: px(SCREEN_SIZE),
+        h: px(SCREEN_SIZE),
+        alpha: 255,
+      })
+    },
+
+    initBg() {
       createWidget(widget.CIRCLE, {
-        center_x: 240,
-        center_y: 240,
-        radius: 240,
+        center_x: px(SCREEN_SIZE/2),
+        center_y: px(SCREEN_SIZE/2),
+        radius: px(SCREEN_SIZE/2),
         color: styleColors.dark_gray,
       })
       createWidget(widget.CIRCLE, {
-        center_x: 240,
-        center_y: 240,
-        radius: 235,
+        center_x: px(SCREEN_SIZE/2),
+        center_y: px(SCREEN_SIZE/2),
+        radius: px((SCREEN_SIZE/2)-5),
         color: styleColors.black,
       })
     },
 
     initWfNumbers() {
-      const centerX = 240;
-      const centerY = 240;
-      const radius = 195;
+      const centerX = px(SCREEN_SIZE/2);
+      const centerY = px(SCREEN_SIZE/2);
+      const radius = px((SCREEN_SIZE/2)-45);
       wfNumbers.initWatchFace(new Date().getHours())
       const numbers = wfNumbers.getTimePointDigits()
       let angle = -90
@@ -83,13 +93,13 @@ Page(
         } 
         angle += 30
         this.widgets.wfNumbers[`_${i}`] = createWidget(widget.TEXT, {
-          x: Math.round(x),
-          y: Math.round(y),
-          w: 52,
-          h: 52,
+          x: px(Math.round(x)),
+          y: px(Math.round(y)),
+          w: px(52),
+          h: px(52),
           color: 0xFFFFFF,
           font: 'fonts/Digiface (Rus by MarkStarikov2014) Regular.ttf',
-          text_size: size,
+          text_size: px(size),
           align_h: align.CENTER_H,
           align_v: align.CENTER_V,
           text: value
@@ -97,85 +107,114 @@ Page(
       }
     },
 
-    initArrows(){
-      this.widgets.destroyArrow = createWidget(widget.IMG,{
-        x: 0,
-        y: 0,
-        h: 480,
-        w: 480,
-        center_x: 240,
-        center_y: 240,
-        pos_x: 240,
-        pos_y: 0,
+    initArrows() {
+      this.widgets.destroyArrow = createWidget(widget.IMG, {
+        x: px(0),
+        y: px(0),
+        h: px(SCREEN_SIZE),
+        w: px(SCREEN_SIZE),
+        center_x: px(SCREEN_SIZE/2),
+        center_y: px(SCREEN_SIZE/2),
+        pos_x: px(SCREEN_SIZE/2),
+        pos_y: px(0),
         angle: EventService.convertTimeToAngle(new Date() - HOUR_MS*2),
         src: 'arrows/deadLine.png'
       })
       this.widgets.hourArrow = createWidget(widget.TIME_POINTER, {
-        hour_centerX: 240,
-        hour_centerY: 240,
-        hour_posX: 2,
-        hour_posY: 240,
+        hour_centerX: px(SCREEN_SIZE/2),
+        hour_centerY: px(SCREEN_SIZE/2),
+        hour_posX: px(2),
+        hour_posY: px(SCREEN_SIZE/2),
         hour_path: 'arrows/hour.png',
-        minute_centerX: 240,
-        minute_centerY: 240,
-        minute_posX: 2,
-        minute_posY: 240,
+        minute_centerX: px(SCREEN_SIZE/2),
+        minute_centerY: px(SCREEN_SIZE/2),
+        minute_posX: px(2),
+        minute_posY: px(SCREEN_SIZE/2),
         minute_path: 'arrows/minute.png',
       })
     },
 
-    iniitCentralBackground(){
-      createWidget(widget.CIRCLE, {
-        center_x: 240,
-        center_y: 240,
-        radius: 111,
-        color: styleColors.dark_gray,
+    initCanvas() {
+      this.widgets.canvas = createWidget(widget.CANVAS, {
+        x: px(0),
+        y: px(0),
+        w: px(SCREEN_SIZE),
+        h: px(SCREEN_SIZE),
+        alpha: 0
       })
-      createWidget(widget.CIRCLE, {
-        center_x: 240,
-        center_y: 240,
-        radius: 105,
-        color: styleColors.black,
+      this.widgets.canvas.addEventListener(event.CLICK_UP, (info) => {
+        const eventsArray = []
+        const actuals = eventServise.getActualEvents()
+        actuals.sort((a, b) => (b.endAngle - (b.endAngle < b.startAngle ? 360 : 0) - b.startAngle) - (a.endAngle - (a.endAngle < a.startAngle ? 360 : 0) - a.startAngle))
+        for (const event of actuals) {
+          if (EventService.isThisEvent(info.x, info.y, event)) {
+            eventsArray.push(event)
+          }
+        }
+        if (eventsArray.length > 0) {
+          push({
+            url: 'page/event',
+            params: JSON.stringify(eventsArray),
+          })
+        }
       })
     },
 
-    initDigitalTime(){
+    initCentralCircle() {
+      createWidget(widget.CIRCLE, {
+        center_x: px(SCREEN_SIZE/2),
+        center_y: px(SCREEN_SIZE/2),
+        radius: px(111),
+        color: styleColors.dark_gray,
+      })
+      createWidget(widget.CIRCLE, {
+        center_x: px(SCREEN_SIZE/2),
+        center_y: px(SCREEN_SIZE/2),
+        radius: px(105),
+        color: styleColors.black,
+      })
+      
+      // Цифровое время
       const timeSensor = new Time()
       this.widgets.digitTime = createWidget(widget.TEXT, {
-        x: (480-190)/2,
-        y: (480-170)/2,
-        w: 180,
-        h: 180,
+        x: px((SCREEN_SIZE-190)/2),
+        y: px((SCREEN_SIZE-170)/2),
+        w: px(180),
+        h: px(180),
         color: styleColors.white_smoke,
-        text_size: 70,
+        text_size: px(70),
         font: 'fonts/Digiface (Rus by MarkStarikov2014) Regular.ttf',
         align_h: align.CENTER_H,
         align_v: align.CENTER_V,
         text: Event.addZero(timeSensor.getHours().toString()) + ':' + Event.addZero(timeSensor.getMinutes().toString())
       })
+      
+      // Дата
       const now = new Date()
-      const date = createWidget(widget.TEXT, {
-        x: (480-180)/2,
-        y: 95,
-        w: 180,
-        h: 180,
+      this.widgets.date = createWidget(widget.TEXT, {
+        x: px((SCREEN_SIZE-180)/2),
+        y: px(95),
+        w: px(180),
+        h: px(180),
         color: styleColors.white_smoke,
-        text_size: 40,
+        text_size: px(40),
         font: 'fonts/Digiface (Rus by MarkStarikov2014) Regular.ttf',
         align_h: align.CENTER_H,
         align_v: align.CENTER_V,
         text: Event.addZero(now.getDate().toString()) + 
           '.' + Event.addZero((now.getMonth()+1).toString())
       })
-      date.addEventListener(event.SELECT, function() {
+      
+      this.widgets.date.addEventListener(event.SELECT, () => {
         launchApp({
           appId: SYSTEM_APP_CALENDAR,
           native: true
         })
       })
 
-      const weekDay = createWidget(widget.TEXT, {
-        x: (480-180)/2,
+      // День недели
+      createWidget(widget.TEXT, {
+        x: (SCREEN_SIZE-180)/2,
         y: 210,
         w: 180,
         h: 180,
@@ -187,115 +226,127 @@ Page(
         text: getText(WEEK_DAYS_SHORT[now.getDay()])
       })
 
-      const self = this
-      timeSensor.onPerMinute(function cb() {
-        self.updateWidgets()
-        date.setProperty(widget.TEXT, Event.addZero(now.getDate().toString()) + 
-        '. ' + Event.addZero((now.getMonth()+1).toString()) + '. ' + now.getFullYear().toString())             
+      const time = new Time()
+      time.onPerMinute(() => {
+        this.updateWidgets()
       })
     },
 
-    initCanvas(){
-      this.widgets.canvas = createWidget(widget.CANVAS, {
-        x: 0,
-        y: 0,
-        w: 480,
-        h: 480,
-        alpha: 100 
-      })
-      this.widgets.canvas.addEventListener(event.CLICK_UP, function cb(info) {
-        const eventsArray = []
-        for (const event of eventServise.getActualEvents()){
-          if (EventService.isThisEvent(info.x, info.y, event)){
-            eventsArray.push(event)
-          }
-        }
-        if (eventsArray.length > 0) {
-            push({
-              url: 'page/event',
-              params: JSON.stringify(eventsArray),
-            })
-        }
-      })
-    },
-
-    updateWfNumbers(){
+    updateWfNumbers() {
       logger.log('Wf numbers updated')
       wfNumbers.updateWatchFaceDigit(new Date().getHours())
       const numbers = wfNumbers.getTimePointDigits()
-      for (let i = 0; i < 12; i++){
-        if (numbers[i] == 12) this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, '☀️') 
-        else if (numbers[i] == 0) this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, '🌙')
-        else this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, numbers[i])
+      for (let i = 0; i < 12; i++) {
+        if (numbers[i] == 12) {
+          this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, '☀️') 
+        } else if (numbers[i] == 0) {
+          this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, '🌙')
+        } else {
+          this.widgets.wfNumbers[`_${i}`].setProperty(prop.TEXT, numbers[i])
+        }
       }
     },
 
-    updateWidgets(){
+    updateWidgets() {
       logger.log('updating main page ...')
       const now = new Date()
+      
       this.updateWfNumbers()
       this.widgets.destroyArrow.setProperty(prop.ANGLE, EventService.convertTimeToAngle(now - HOUR_MS * 2))
       this.widgets.digitTime.setProperty(prop.TEXT, 
                                 Event.addZero(now.getHours().toString()) + 
                                 ':' +
                                 Event.addZero(now.getMinutes().toString()))
-        this.widgets.canvas.clear({
-          x: 0,
-          y: 0,
-          w: 480,
-          h: 480
-        })
-        this.renderEvents(eventServise.getActualEvents())
-        logger.log('main page updated')
+      
+      this.widgets.date.setProperty(prop.TEXT, 
+        Event.addZero(now.getDate().toString()) + 
+        '.' + Event.addZero((now.getMonth()+1).toString()))
+      this.widgets.canvasColor.clear({
+        x: px(0),
+        y: px(0),
+        w: px(SCREEN_SIZE),
+        h: px(SCREEN_SIZE)
+      })
+      
+      this.widgets.canvas.clear({
+        x: 0,
+        y: 0,
+        w: SCREEN_SIZE,
+        h: SCREEN_SIZE
+      })
+      
+      this.renderEvents(eventServise.getActualEvents())
+      logger.log('main page updated')
     },
 
-    drawEvent(event){
-      const ev = new Event(event)
+    drawEvent(event) {
+      this.widgets.canvasColor.drawArc({
+        center_x: px(SCREEN_SIZE/2),
+        center_y: px(SCREEN_SIZE/2),
+        radius_x: px((SCREEN_SIZE/2)-5),
+        radius_y: px((SCREEN_SIZE/2)-5),
+        start_angle: event.startAngle-90,
+        end_angle: event.endAngle-90,
+        color: event.color
+      })
+      
       this.widgets.canvas.drawArc({
-        center_x: 240,
-        center_y: 240,
-        radius_x: 235,
-        radius_y: 235,
+        center_x: px(SCREEN_SIZE/2),
+        center_y: px(SCREEN_SIZE/2),
+        radius_x: px((SCREEN_SIZE/2)-5),
+        radius_y: px((SCREEN_SIZE/2)-5),
         start_angle: event.startAngle-90,
         end_angle: event.endAngle-90,
         color: event.color
       })
     },
 
-    renderEvents(events){
+    renderEvents(events) {
+      events.sort((a, b) => (b.endAngle - (b.endAngle < b.startAngle ? 360 : 0) - b.startAngle) - (a.endAngle - (a.endAngle < a.startAngle ? 360 : 0) - a.startAngle))
       for (const event of events) {
         this.drawEvent(event);
       }
     },
 
-    renderPageIndicator(){
+    renderPageIndicator() {
       this.widgets.pageIndicator = createWidget(widget.PAGE_INDICATOR, {
-          x: 5,
-          y: 15,
-          w: 480,
-          h: 10,
+          x: px(5),
+          y: px(15),
+          w: px(SCREEN_SIZE),
+          h: px(10),
           align_h: align.CENTER_H,
-          h_space: 10,
+          h_space: px(10),
           select_src: 'indicator/select.png',
           unselect_src: 'indicator/unselect.png'
       })
     },
 
-    onInit(params){ 
+    registerGes(){
+        onGesture({
+            callback: (event) => {
+            if (event === GESTURE_RIGHT) {
+              exit()
+            }
+            return true
+            },
+        })
+    },
+    onInit(params) { 
+      this.registerGes()
       setScrollMode({
           mode: SCROLL_MODE_SWIPER_HORIZONTAL,
           options: {
-              width: 500,
+              width: px(SCREEN_SIZE + 20),
               count: 2
           }
       })
       this.initBg()
+      this.initColorCanvas()
       this.initWfNumbers()
       this.initArrows()
       this.initCanvas()
       this.renderEvents(eventServise.getActualEvents())
-      this.iniitCentralBackground()
-      this.initDigitalTime()
+      this.initCentralCircle()
       this.renderPageIndicator()
       const menu = new MainMenu()
     }

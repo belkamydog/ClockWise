@@ -1,10 +1,14 @@
+import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import {createWidget, widget, prop} from '@zos/ui'
-import { push } from '@zos/router'
 import { getText } from '@zos/i18n'
+import { push } from '@zos/router'
+import { px } from '@zos/utils'
+import { BackBtn } from '../../../common/widgets/backBtn'
 
 Page ({
     widgets: {
-        picker: null
+        picker: null,
+        backBtn: null,
     },
     data: {
         event: null,
@@ -13,8 +17,20 @@ Page ({
     },
 
     onInit(params) {
+        this.registerGes()
         this.checkParams(params)
         this.widgets.picker = this.initPicker()
+        this.widgets.backBtn = BackBtn.renderBackBtn('Cancel', 'page/index')
+    },
+
+    registerGes(){
+        onGesture({
+            callback: (event) => {
+            if (event === GESTURE_RIGHT) {
+            }
+            return true
+            },
+        })
     },
 
     getDaysInMonth(year, month) {
@@ -63,11 +79,11 @@ Page ({
                 init_val_index: currentDate[i],
                 unit: getText(pickerFields[i]),
                 support_loop: true,
-                font_size: 30,
-                select_font_size: 35,
-                connector_font_size: 1,
-                unit_font_size: 5,
-                col_width: 45
+                font_size: px(30),
+                select_font_size: px(35),
+                connector_font_size: px(1),
+                unit_font_size: px(5),
+                col_width: px(45)
             }
             result.push(field)
         }
@@ -145,7 +161,7 @@ Page ({
         const pickerFunc = this.getPickerFunc()
         const config = this.initPickerConfig()
         this.widgets.picker = createWidget(widget.WIDGET_PICKER, {
-            title: getText('Start date'),
+            title: '🚀 ' + getText('Start date'),
             subtitle: '',
             nb_of_columns: config.length,
             single_wide: true,

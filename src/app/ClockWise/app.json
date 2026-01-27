@@ -6,7 +6,7 @@
     "appType": "app",
     "version": {
       "code": 1,
-      "name": "1.0.0"
+      "name": "1.1.0"
     },
     "icon": "icon.png",
     "vender": "zepp",
@@ -33,11 +33,6 @@
             "page/about",
             "page/settings/menu",
             "page/settings/history",
-            "page/guides/welcome",
-            "page/guides/step_0",
-            "page/guides/step_1",
-            "page/guides/step_2",
-            "page/guides/step_3",
             "page/event/delete/delete_choice",
             "page/event/create/description",
             "page/event/create/start_date",

@@ -1,6 +1,7 @@
 import { eventServise } from '../utils/Globals';
 import { widget, createWidget, align } from '@zos/ui'
 import { exit } from '@zos/router'
+import { px } from '@zos/utils'
 
 /**
  * Update Data Page - Refreshes event data and returns to watch face.
@@ -46,12 +47,12 @@ Page({
         // Display update confirmation message
         createWidget(widget.TEXT, {
             text: 'Update events data',
-            text_size: 40,
+            text_size: px(40),
             color: 0xffffff,
-            x: 0,
+            x: px(0),
             align_h: align.CENTER_H,
-            y: 230,
-            w: 480,
+            y: px(230),
+            w: px(480),
         });
         
         // Immediately return to watch face

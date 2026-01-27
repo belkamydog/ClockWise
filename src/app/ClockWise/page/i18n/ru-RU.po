@@ -278,10 +278,10 @@ msgid "Description"
 msgstr "Описание"
 
 msgid "Start date"
-msgstr "Начало события"
+msgstr "Начало"
 
 msgid "End date"
-msgstr "Окончание события"
+msgstr "Окончание"
 
 msgid "Color"
 msgstr "Цвет"

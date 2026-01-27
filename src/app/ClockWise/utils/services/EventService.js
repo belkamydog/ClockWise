@@ -203,12 +203,11 @@ export class EventService {
                 this.#repeateRule(new Event(ev), period, resultList)
             }
             else {
-                if (new Date(ev.start) >= period.start && new Date(ev.end) <= period.end)
+                if (this.#isThisPeriodEvent(ev, period))
                     resultList.push(new Event(ev))
             }
         }
-        resultList.sort((a, b) => new Date(a.start) - new Date(b.start));
-        return resultList
+        return sortedList = this.#sortEvents(resultList)
     }
     
     getMonthListOfEvents(date){
@@ -268,6 +267,63 @@ export class EventService {
             monthWorkLoad.push(this.#getDayWorkLoad(currentDay, eventsByDay));
         }
         return monthWorkLoad;
+    }
+
+
+    // Функция сортировки с учетом статуса событий
+    #sortEvents(eventsList) {
+        return eventsList.sort((a, b) => {
+            const statusA = this.#determineEventType(a);
+            const statusB = this.#determineEventType(b);
+            
+            // Определяем порядок статусов
+            const statusOrder = {
+                past: 0,    // Сначала прошедшие
+                current: 1, // Затем текущие
+                future: 2   // В конце будущие
+            };
+            
+            // Сначала сортируем по статусу
+            if (statusA !== statusB) {
+                return statusOrder[statusA] - statusOrder[statusB];
+            }
+            
+            // Если статус одинаковый, сортируем по времени начала
+            const dateA = new Date(a.start);
+            const dateB = new Date(b.start);
+            return dateA - dateB;
+        });
+    }
+
+    // Функция определения типа события
+    #determineEventType(event) {
+        const now = new Date();
+        const start = new Date(event.start);
+        const end = new Date(event.end);
+        
+        if (now > end) {
+            return 'past'; // Прошлое
+        } else if (start > now) {
+            return 'future'; // Будущее
+        } else {
+            return 'current'; // Текущее
+        }
+    }
+
+    #isThisPeriodEvent(event, period) {
+        const eventStart = new Date(event.start)
+        const eventEnd = new Date(event.end)
+        const periodStart = new Date(period.start)
+        const periodEnd = new Date(period.end)
+        
+        return (
+            // Событие начинается в период
+            (eventStart >= periodStart && eventStart <= periodEnd) ||
+            // Событие заканчивается в период
+            (eventEnd >= periodStart && eventEnd <= periodEnd) ||
+            // Событие полностью охватывает период
+            (eventStart <= periodStart && eventEnd >= periodEnd)
+        )
     }
 
     #groupEventsByDay(events) {
@@ -920,7 +976,9 @@ export class EventService {
       for (const ev of eventsList){
         const start = new Date(ev.start)
         const end = new Date(ev.end)
-        if (now > end) past++
+        if (now > end) {
+            past++
+        }
         else if (start > now) future++
         else current++
       }
